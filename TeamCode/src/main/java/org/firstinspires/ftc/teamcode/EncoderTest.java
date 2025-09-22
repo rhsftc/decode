@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -42,13 +40,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
- * Demonstrates an empty iterative OpMode
+ * Testa changing PIDF values for motor encoders.
+ * Use it to experiment with PIDF values.
  */
 @TeleOp(name = "Encoder Test", group = "test")
 //@Disabled
 public class EncoderTest extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
-    private GamepadEx gamePad;
     private DcMotorEx motor;
     private DcMotor.RunMode mode;
     private final float ENCODER_INCREMENT = 145.1f * 50f; // 10 revolutions
@@ -65,7 +63,6 @@ public class EncoderTest extends OpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.addLine("Dpad Up and Dpad Down");
         telemetry.update();
-        gamePad = new GamepadEx(gamepad1);
         motor = hardwareMap.get(DcMotorEx.class, "motor");
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -109,21 +106,20 @@ public class EncoderTest extends OpMode {
      */
     @Override
     public void loop() {
-        gamePad.readButtons();
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        if (gamePad.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+        if (gamepad1.dpadUpWasReleased()) {
             motor.setTargetPosition((int) (motor.getCurrentPosition() + ENCODER_INCREMENT));
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motor.setVelocity(RUN_VELOCITY);
         }
 
-        if (gamePad.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+        if (gamepad1.dpadDownWasReleased()) {
             motor.setTargetPosition((int) (motor.getCurrentPosition() - ENCODER_INCREMENT));
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motor.setVelocity(RUN_VELOCITY);
         }
 
-        if (gamePad.wasJustPressed(GamepadKeys.Button.Y)) {
+        if (gamepad1.yWasReleased()) {
             stopAndResetEncoder(motor);
         }
 
