@@ -68,7 +68,7 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Disabled
+//@Disabled
 @TeleOp(name = "Vision Color-Locator (Circle)", group = "test")
 public class VisionColorLocator_Circle extends LinearOpMode {
     @Override
@@ -160,7 +160,7 @@ public class VisionColorLocator_Circle extends LinearOpMode {
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
                 .setCameraResolution(new Size(320, 240))
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam1"))
+                .setCamera(hardwareMap.get(WebcamName.class, "webcam1"))
                 .build();
 
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates for debugging.
