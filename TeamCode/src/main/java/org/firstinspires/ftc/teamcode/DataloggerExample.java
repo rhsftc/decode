@@ -54,13 +54,11 @@ Credit to Olavi Kamppari, who shared a more advanced version dated 9/9/2015.
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;   // IMU used in REV Hubs
 
@@ -69,9 +67,9 @@ import com.qualcomm.hardware.bosch.BNO055IMU;   // IMU used in REV Hubs
 public class DataloggerExample extends LinearOpMode {
 
     // Declare members.
-    BNO055IMU imu;
+    IMU imu;
     BNO055IMU.Parameters imuParameters;
-    Orientation angles;
+    YawPitchRollAngles orientation;
     Datalogger imuDL;     // edit name to Datalogger, or the name you used
 
     double myHeading;
@@ -85,13 +83,13 @@ public class DataloggerExample extends LinearOpMode {
     public void runOpMode() {
 
         // Get device from robot Configuration.
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
 
         // Initialize parameters and IMU.
-        imuParameters = new BNO055IMU.Parameters();
-        imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imuParameters.loggingEnabled = false;
-        imu.initialize(imuParameters);
+//        imuParameters = new BNO055IMU.Parameters();
+//        imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+//        imuParameters.loggingEnabled = false;
+//        imu.initialize(imuParameters);
 
         // Instantiate Datalogger class.  Edit name as needed.
         imuDL = new Datalogger(datalogFilename);
@@ -119,8 +117,8 @@ public class DataloggerExample extends LinearOpMode {
 
             if (dataTimer.time() > logInterval) {
 
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                myHeading = angles.firstAngle;      // store Z-angle or heading
+                orientation = imu.getRobotYawPitchRollAngles();
+                myHeading = orientation.getYaw();      // store yaw or heading
                 readCount++;
 
                 // Populate the fields to be logged.  Must appear in the same order
@@ -133,11 +131,6 @@ public class DataloggerExample extends LinearOpMode {
                 // Show live telemetry on the Driver Station screen.
                 telemetry.addData("Count", readCount);
                 telemetry.addData("myHeading", "%.1f", myHeading);
-
-                // Show IMU system status and calibration status.
-                telemetry.addLine();
-                telemetry.addData("IMU status", imu.getSystemStatus().toShortString());
-                telemetry.addData("IMU calibration status", imu.getCalibrationStatus().toString());
 
                 telemetry.update();
 
