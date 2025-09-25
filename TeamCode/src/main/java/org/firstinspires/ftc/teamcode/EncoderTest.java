@@ -40,7 +40,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
- * Testa changing PIDF values for motor encoders.
+ * Test changing PIDF values for motor encoders.
  * Use it to experiment with PIDF values.
  */
 @TeleOp(name = "Encoder Test", group = "test")
