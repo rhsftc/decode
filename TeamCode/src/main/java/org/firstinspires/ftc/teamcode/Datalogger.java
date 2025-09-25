@@ -90,7 +90,7 @@ public class Datalogger {
     public Datalogger(String fileName) {
 
         // Build the path with the filename provided by the calling OpMode.
-        String directoryPath = "/sdcard/FIRST/java/src/datalogs";
+        String directoryPath = "/sdcard/FIRST/datalogs";
         String filePath = directoryPath + "/" + fileName + ".txt";
 
         // src and any subfolder contents appear in OnBot Java (left side).

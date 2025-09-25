@@ -74,7 +74,7 @@ public class DataloggerExample extends LinearOpMode {
 
     double myHeading;
     int readCount = 0;
-    String datalogFilename = "myDatalog_005";   // modify name for each run
+    String datalogFilename = "myDatalog";   // modify name for each run
 
     ElapsedTime dataTimer;              // timer object
     int logInterval = 50;               // target interval in milliseconds
