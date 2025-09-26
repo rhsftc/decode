@@ -15,9 +15,10 @@ public class TestServo extends OpMode {
         CONTINUOUS
     }
 
+    // amount to slew servo each button press.
     static final double INCREMENT = 0.1;
     SERVO_TYPE servoType = SERVO_TYPE.STANDARD;
-    // amount to slew servo each button press.
+    private PwmControl.PwmRange pwmRange;
     private Servo servo;
     private CRServo crServo;
     private double position = 0;
@@ -36,30 +37,30 @@ public class TestServo extends OpMode {
         if (gamepad1.aWasReleased()) {
             if (servoType == SERVO_TYPE.STANDARD) {
                 servoType = SERVO_TYPE.CONTINUOUS;
-                position = 0.5;
-                crServo = hardwareMap.get(CRServo.class, "servo1");
-                servo = null;
             } else {
                 servoType = SERVO_TYPE.STANDARD;
-                position = 0;
-                servo = hardwareMap.get(ServoImplEx.class, "servo1");
-                crServo = null;
             }
-
-            telemetry.addData("Servo Type", servoType);
-            telemetry.update();
         }
+
+        telemetry.addData("Servo Type", servoType);
+        telemetry.update();
     }
 
     @Override
     public void start() {
         telemetry.clearAll();
-        showServoTelemetry();
         telemetry.update();
         if (servoType == SERVO_TYPE.STANDARD) {
+            ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
+            pwmRange = ((ServoImplEx) servo).getPwmRange();
+            position = 0;
+            servo = hardwareMap.get(ServoImplEx.class, "servo1");
             servo.setPosition(0);
+            showServoTelemetry();
         } else {
+            crServo = hardwareMap.get(CRServo.class, "servo1");
             crServo.setPower(0);
+            showCRServoTelemetry();
         }
     }
 
@@ -92,6 +93,7 @@ public class TestServo extends OpMode {
                 }
 
                 servo.setPosition(position);
+                showServoTelemetry();
                 break;
             case CONTINUOUS:
                 if (gamepad1.dpadLeftWasReleased()) {
@@ -103,6 +105,7 @@ public class TestServo extends OpMode {
                 }
 
                 showCRServoTelemetry();
+                break;
             default:
         }
     }
@@ -118,7 +121,8 @@ public class TestServo extends OpMode {
         telemetry.addLine("Y = .5 (middle)");
         telemetry.addLine("Dpad up: Increase position");
         telemetry.addLine("Dpad down: Decrease position");
-        telemetry.addData("PWM Range", ((PwmControl) servo).getPwmRange());
+        telemetry.addData("PWM Lower Range", pwmRange.usPulseLower);
+        telemetry.addData("PWM Upper Range", pwmRange.usPulseUpper);
         telemetry.addData("Position", position);
     }
 
