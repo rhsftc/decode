@@ -25,9 +25,6 @@ public class TestServo extends OpMode {
 
     @Override
     public void init() {
-        // Make the name match your config file and robot.
-        // servo = hardwareMap.get(ServoImplEx.class, "servo1");
-        servo = hardwareMap.get(ServoImplEx.class, "servo1");
         showConfigTelemetry();
         telemetry.update();
     }
@@ -51,10 +48,10 @@ public class TestServo extends OpMode {
         telemetry.clearAll();
         telemetry.update();
         if (servoType == SERVO_TYPE.STANDARD) {
+            servo = hardwareMap.get(ServoImplEx.class, "servo1");
             ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
             pwmRange = ((ServoImplEx) servo).getPwmRange();
             position = 0;
-            servo = hardwareMap.get(ServoImplEx.class, "servo1");
             servo.setPosition(0);
             showServoTelemetry();
         } else {
@@ -96,6 +93,15 @@ public class TestServo extends OpMode {
                 showServoTelemetry();
                 break;
             case CONTINUOUS:
+                if (gamepad1.bWasReleased()) {
+                    crServo.setPower(0);
+                    if (crServo.getDirection() == CRServo.Direction.FORWARD) {
+                        crServo.setDirection(CRServo.Direction.REVERSE);
+                    } else {
+                        crServo.setDirection(CRServo.Direction.FORWARD);
+                    }
+                }
+
                 if (gamepad1.dpadLeftWasReleased()) {
                     crServo.setPower(0);
                 }
@@ -115,10 +121,10 @@ public class TestServo extends OpMode {
     }
 
     private void showServoTelemetry() {
-        telemetry.addLine("Disable Servo = back");
-        telemetry.addLine("Left bumper = 0");
-        telemetry.addLine("Right bumper = 1");
-        telemetry.addLine("Y = .5 (middle)");
+        telemetry.addLine("Disable Servo: back");
+        telemetry.addLine("Left bumper: 0");
+        telemetry.addLine("Right bumper: 1");
+        telemetry.addLine("Y: .5 (middle)");
         telemetry.addLine("Dpad up: Increase position");
         telemetry.addLine("Dpad down: Decrease position");
         telemetry.addData("PWM Lower Range", pwmRange.usPulseLower);
@@ -129,6 +135,8 @@ public class TestServo extends OpMode {
     private void showCRServoTelemetry() {
         telemetry.addLine("Dpad left: Stop");
         telemetry.addLine("Dpad right: Full power");
+        telemetry.addLine("B: Toggle direction");
+        telemetry.addData("Direction", crServo.getDirection());
         telemetry.addData("Power", crServo.getPower());
     }
 }
