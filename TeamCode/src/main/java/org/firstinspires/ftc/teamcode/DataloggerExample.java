@@ -53,8 +53,10 @@ Credit to Olavi Kamppari, who shared a more advanced version dated 9/9/2015.
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -68,7 +70,7 @@ public class DataloggerExample extends LinearOpMode {
 
     // Declare members.
     IMU imu;
-    BNO055IMU.Parameters imuParameters;
+    IMU.Parameters imuParameters;
     YawPitchRollAngles orientation;
     Datalogger imuDL;     // edit name to Datalogger, or the name you used
 
@@ -85,11 +87,13 @@ public class DataloggerExample extends LinearOpMode {
         // Get device from robot Configuration.
         imu = hardwareMap.get(IMU.class, "imu");
 
-        // Initialize parameters and IMU.
-//        imuParameters = new BNO055IMU.Parameters();
-//        imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-//        imuParameters.loggingEnabled = false;
-//        imu.initialize(imuParameters);
+        imuParameters = new IMU.Parameters(
+                new RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                )
+        );
+        imu.initialize(imuParameters);
 
         // Instantiate Datalogger class.  Edit name as needed.
         imuDL = new Datalogger(datalogFilename);
