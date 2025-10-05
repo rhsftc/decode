@@ -73,7 +73,6 @@ public class DataloggerExample extends LinearOpMode {
     YawPitchRollAngles orientation;
     Datalogger datalogger;     // edit name to Datalogger, or the name you used
     double myHeading;
-    LynxModule lynxModule;
     double current;
     int readCount = 0;
     String datalogFilename = "myDatalog";   // modify name for each run
@@ -84,8 +83,7 @@ public class DataloggerExample extends LinearOpMode {
     public void runOpMode() {
         List<LynxModule> lynx = hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : lynx) {
-            lynxModule = module;
-            current = lynxModule.getCurrent(CurrentUnit.MILLIAMPS);
+            current = module.getCurrent(CurrentUnit.MILLIAMPS);
         }
         // Get device from robot Configuration.
         imu = hardwareMap.get(IMU.class, "imu");
@@ -134,13 +132,6 @@ public class DataloggerExample extends LinearOpMode {
                 // Show live telemetry on the Driver Station screen.
                 telemetry.addData("Count", readCount);
                 telemetry.addData("myHeading", "%.1f", myHeading);
-                for (LynxModule module : lynx) {
-                    lynxModule = module;
-                    current = lynxModule.getCurrent(CurrentUnit.MILLIAMPS);
-                    telemetry.addData("Is parent", lynxModule.isParent());
-                }
-
-                telemetry.addData("Lynx Current", current);
                 telemetry.update();
                 dataTimer.reset();      // start the interval timer again
             }   // end if(timer)
