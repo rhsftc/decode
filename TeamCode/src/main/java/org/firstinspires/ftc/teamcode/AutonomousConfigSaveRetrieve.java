@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.Context;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.ObjectInputStream;
@@ -46,6 +47,8 @@ public class AutonomousConfigSaveRetrieve {
         AutonomousOptions autonomousOptions = null;
         try {
             FileInputStream fileInputStream = context.openFileInput(fileName);
+//            File filesDir = context.getFilesDir();
+//            String string = filesDir.toString();
             objectInputStream = new ObjectInputStream(fileInputStream);
             autonomousOptions = (AutonomousOptions) objectInputStream.readObject();
             objectInputStream.close();

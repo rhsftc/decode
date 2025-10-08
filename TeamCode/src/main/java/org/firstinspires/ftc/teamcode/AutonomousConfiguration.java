@@ -89,10 +89,10 @@ public class AutonomousConfiguration {
     private void ShowHelp() {
         teleAlliance = telemetry.addData("X = Blue, B = Red", autonomousOptions.getAllianceColor());
         teleStartPosition = telemetry.addData("D-pad left/right, select start position", autonomousOptions.getStartPosition());
-        teleParkOnSignalZone = telemetry.addData("D-pad down to cycle park on signal zone", autonomousOptions.getRetrieveFromSpike());
+        teleParkOnSignalZone = telemetry.addData("D-pad down to cycle retrieve from spike", autonomousOptions.getRetrieveFromSpike());
         teleDelayStartSeconds = telemetry.addData("Left & Right buttons, Delay Start", autonomousOptions.getDelayStartSeconds());
         teleReadyToStart = telemetry.addData("Ready to start: ", getReadyToStart());
-        teleSavedToFile = telemetry.addData("Saved to file:", savedToFile);
+        teleSavedToFile = telemetry.addData("Saved to file (Start button to save):", savedToFile);
         telemetry.addLine("Back button resets all options.");
         telemetry.update();
     }
