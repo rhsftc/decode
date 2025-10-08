@@ -38,10 +38,7 @@ public class AutonomousConfiguration {
     private Telemetry telemetry;
     private Telemetry.Item teleAlliance;
     private Telemetry.Item teleStartPosition;
-    private Telemetry.Item teleParkLocation;
     private Telemetry.Item teleParkOnSignalZone;
-    private Telemetry.Item telePlaceConeInTerminal;
-    private Telemetry.Item telePlaceConesOnJunctions;
     private Telemetry.Item teleDelayStartSeconds;
     private Telemetry.Item teleReadyToStart;
     private Telemetry.Item teleSavedToFile;
