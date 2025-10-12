@@ -83,7 +83,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Tank Drive To AprilTag", group = "test")
-@Disabled
+//@Disabled
 public class AutoDriveToAprilTagTank extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
@@ -243,7 +243,7 @@ public class AutoDriveToAprilTagTank extends LinearOpMode
         // Create the vision portal by using a builder.
         if (USE_WEBCAM) {
             visionPortal = new VisionPortal.Builder()
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .setCamera(hardwareMap.get(WebcamName.class, "webcam1"))
                     .addProcessor(aprilTag)
                     .build();
         } else {
