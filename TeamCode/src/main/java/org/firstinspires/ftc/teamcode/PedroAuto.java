@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
-@Autonomous(name = "Pedro Auto", group = "Examples")
+@Autonomous(name = "Pedro Auto", group = "pedro")
 public class PedroAuto extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;

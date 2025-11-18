@@ -59,8 +59,8 @@ import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Disabled
-@TeleOp(name = "Concept: Vision Color-Sensor", group = "Concept")
+//@Disabled
+@TeleOp(name = "Vision Color-Sensor", group = "test")
 public class VisionColorSensor extends LinearOpMode {
     @Override
     public void runOpMode() {

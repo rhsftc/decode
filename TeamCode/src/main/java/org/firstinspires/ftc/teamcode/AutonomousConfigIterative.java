@@ -41,7 +41,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * It includes all the skeletal structure that all iterative OpModes contain.
  */
 
-@Autonomous(name = "Iterative Options Menu", group = "Autonomous")
+@Autonomous(name = "Iterative Options Menu", group = "menu")
 //@Disabled
 public class AutonomousConfigIterative extends OpMode {
     AutonomousConfiguration autonomousConfiguration = new AutonomousConfiguration();

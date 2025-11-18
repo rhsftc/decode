@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import java.util.function.Supplier;
 
 @Configurable
-@TeleOp (name = "Pedro TeleOp", group = "Examples")
+@TeleOp (name = "Pedro TeleOp", group = "pedro")
 public class PedroTeleOp extends OpMode {
     private Follower follower;
     public static Pose startingPose; //See ExampleAuto to understand how to use this

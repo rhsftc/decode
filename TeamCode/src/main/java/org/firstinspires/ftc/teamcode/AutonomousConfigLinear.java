@@ -40,7 +40,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Not the use in a linear op mode is slightly different than an interative op mode.
  */
 
-@Autonomous(name = "Linear Options Menu", group = "Autonomous")
+@Autonomous(name = "Linear Options Menu", group = "menu")
 //@Disabled
 public class AutonomousConfigLinear extends LinearOpMode {
 
