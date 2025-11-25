@@ -51,8 +51,8 @@ public class EncoderTest extends OpMode {
     private double maxVelocity = 0;
     private DcMotorEx motor;
     private DcMotor.RunMode mode;
-    private double ENCODER_INCREMENT = 2f; //seconds
-    private double RUN_VELOCITY = .7f;
+    private final double ENCODER_INCREMENT = 2f; //seconds
+    private final double RUN_VELOCITY = .7f;
 
     /**
      * This method will be called once, when the INIT button is pressed.
