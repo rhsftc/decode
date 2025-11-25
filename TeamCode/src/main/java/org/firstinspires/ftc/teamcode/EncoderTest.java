@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -44,6 +45,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * Use it to experiment with PIDF values.
  */
 @TeleOp(name = "Encoder Test", group = "test")
+@Configurable
 //@Disabled
 public class EncoderTest extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
@@ -52,7 +54,14 @@ public class EncoderTest extends OpMode {
     private DcMotorEx motor;
     private DcMotor.RunMode mode;
     private final double ENCODER_INCREMENT = 2f; //seconds
-    private final double RUN_VELOCITY = .7f;
+    private final double RUN_VELOCITY = .8f;
+
+    public static float velocityP = 1.063f;
+    public static float velocityI = 1.063f;
+    public static float velocityD = 0;
+    public static float velocityF = 10.63f;
+    public static float positionP = 10f;
+    public static int tolerance = 5;
 
     /**
      * This method will be called once, when the INIT button is pressed.
@@ -72,12 +81,13 @@ public class EncoderTest extends OpMode {
         // Get the default PIDF's and then set new values for velocity control.
         PIDFCoefficients pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 //        PIDFCoefficients pidfPositionCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-        pidfVelocityCoefficients.p = 1.063f;
-        pidfVelocityCoefficients.i = 1.063f;
-        pidfVelocityCoefficients.f = 10.63f;
+        pidfVelocityCoefficients.p = velocityP;
+        pidfVelocityCoefficients.i = velocityI;
+        pidfVelocityCoefficients.d = velocityD;
+        pidfVelocityCoefficients.f = velocityF;
         motor.setVelocityPIDFCoefficients(pidfVelocityCoefficients.p, pidfVelocityCoefficients.i, pidfVelocityCoefficients.d, pidfVelocityCoefficients.f);
-        motor.setPositionPIDFCoefficients(10f);
-        motor.setTargetPositionTolerance(5);
+        motor.setPositionPIDFCoefficients(positionP);
+        motor.setTargetPositionTolerance(tolerance);
     }
 
     /**
