@@ -52,9 +52,7 @@ public class EncoderTest extends OpMode {
     private DcMotorEx motor;
     private DcMotor.RunMode mode;
     private final double ENCODER_INCREMENT = maxVelocity * 2f; //seconds
-    private double RUN_VELOCITY = maxVelocity * .9f;
-    private PIDFCoefficients pidfVelocityCoefficients;
-    private PIDFCoefficients pidfPositionCoefficients;
+    private final double RUN_VELOCITY = maxVelocity * .9f;
 
     /**
      * This method will be called once, when the INIT button is pressed.
@@ -70,8 +68,8 @@ public class EncoderTest extends OpMode {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setDirection(DcMotorSimple.Direction.FORWARD);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        pidfPositionCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+        PIDFCoefficients pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        PIDFCoefficients pidfPositionCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
         pidfVelocityCoefficients.p = 1.063f;
         pidfVelocityCoefficients.i = 1.063f;
         pidfVelocityCoefficients.f = 10.63f;
@@ -109,7 +107,7 @@ public class EncoderTest extends OpMode {
      */
     @Override
     public void loop() {
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Status", "Run Time: " + runtime);
         if (gamepad1.dpadUpWasReleased()) {
             motor.setTargetPosition((int) (motor.getCurrentPosition() + ENCODER_INCREMENT));
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -127,6 +125,7 @@ public class EncoderTest extends OpMode {
         }
 
         mode = motor.getMode();
+        telemetry.addData("Max Velocity", maxVelocity);
         telemetry.addData("Target", "%d", motor.getTargetPosition());
         telemetry.addData("Position", "%d", motor.getCurrentPosition());
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
@@ -165,7 +164,7 @@ public class EncoderTest extends OpMode {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(1);
         timer.reset();
-        double velocity = 0;
+        double velocity;
         while (timer.seconds() < 4) {
             velocity = motor.getVelocity();
             if (velocity > maxVelocity) {
@@ -178,6 +177,5 @@ public class EncoderTest extends OpMode {
         }
 
         motor.setPower(0);
-        velocity = 0;
     }
 }
