@@ -46,12 +46,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @TeleOp(name = "Encoder Test", group = "test")
 //@Disabled
 public class EncoderTest extends OpMode {
-    private ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime timer = new ElapsedTime();
+    private double maxVelocity = 0;
     private DcMotorEx motor;
     private DcMotor.RunMode mode;
-    private final float ENCODER_INCREMENT = 145.1f * 50f; // 10 revolutions
-    private final double MAX_VELOCITY = 2900;
-    private double RUN_VELOCITY = MAX_VELOCITY * .7f;
+    private final double ENCODER_INCREMENT = maxVelocity * 2f; //seconds
+    private double RUN_VELOCITY = maxVelocity * .9f;
     private PIDFCoefficients pidfVelocityCoefficients;
     private PIDFCoefficients pidfPositionCoefficients;
 
@@ -64,6 +65,8 @@ public class EncoderTest extends OpMode {
         telemetry.addLine("Dpad Up and Dpad Down");
         telemetry.update();
         motor = hardwareMap.get(DcMotorEx.class, "motor");
+        // Find the maximum velocity of the motor.
+        findMaxVelocity();
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setDirection(DcMotorSimple.Direction.FORWARD);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -156,5 +159,25 @@ public class EncoderTest extends OpMode {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(0);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    private void findMaxVelocity() {
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor.setPower(1);
+        timer.reset();
+        double velocity = 0;
+        while (timer.seconds() < 4) {
+            velocity = motor.getVelocity();
+            if (velocity > maxVelocity) {
+                maxVelocity = velocity;
+            }
+            telemetry.addData("current velocity", "%5.2f", velocity);
+            telemetry.addData("maximum velocity", "%5.2f", maxVelocity);
+            telemetry.addData("Power", "%5.2f", motor.getPower());
+            telemetry.update();
+        }
+
+        motor.setPower(0);
+        velocity = 0;
     }
 }
