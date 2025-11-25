@@ -79,15 +79,7 @@ public class EncoderTest extends OpMode {
         stopAndResetEncoder(motor);
 
         // Get the default PIDF's and then set new values for velocity control.
-        PIDFCoefficients pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-//        PIDFCoefficients pidfPositionCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-        pidfVelocityCoefficients.p = velocityP;
-        pidfVelocityCoefficients.i = velocityI;
-        pidfVelocityCoefficients.d = velocityD;
-        pidfVelocityCoefficients.f = velocityF;
-        motor.setVelocityPIDFCoefficients(pidfVelocityCoefficients.p, pidfVelocityCoefficients.i, pidfVelocityCoefficients.d, pidfVelocityCoefficients.f);
-        motor.setPositionPIDFCoefficients(positionP);
-        motor.setTargetPositionTolerance(tolerance);
+        updatePIDF();
     }
 
     /**
@@ -118,6 +110,7 @@ public class EncoderTest extends OpMode {
      */
     @Override
     public void loop() {
+        updatePIDF();
         telemetry.addData("Status", "Run Time: " + runtime);
         if (gamepad1.dpadUpWasReleased()) {
             motor.setTargetPosition((int) (motor.getCurrentPosition() + maxVelocity * ENCODER_INCREMENT));
@@ -188,5 +181,15 @@ public class EncoderTest extends OpMode {
         }
 
         motor.setPower(0);
+    }
+
+    private void updatePIDF() {
+        PIDFCoefficients pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        pidfVelocityCoefficients.p = velocityP;
+        pidfVelocityCoefficients.i = velocityI;
+        pidfVelocityCoefficients.d = velocityD;
+        pidfVelocityCoefficients.f = velocityF;
+        motor.setVelocityPIDFCoefficients(pidfVelocityCoefficients.p, pidfVelocityCoefficients.i, pidfVelocityCoefficients.d, pidfVelocityCoefficients.f);
+        motor.setPositionPIDFCoefficients(positionP);
     }
 }
