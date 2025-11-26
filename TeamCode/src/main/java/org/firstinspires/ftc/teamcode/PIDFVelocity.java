@@ -114,15 +114,14 @@ public class PIDFVelocity extends OpMode {
         // Start the motor at RUN_VELOCITY when the left bumper is released.
         if (gamepad1.leftBumperWasReleased()) {
             motor.setVelocity(maxVelocity * RUN_VELOCITY);
-        }
-        // Start the timer when the motor reaches max velocity.
-        if (motor.getVelocity() >= maxVelocity * RUN_VELOCITY) {
             timer.reset();
         }
+
         // Stop and reset the encoder after 2 seconds at max velocity.
-        if (timer.seconds() >= 2) {
+        if (timer.seconds() >= 2 && motor.getVelocity() >= maxVelocity * RUN_VELOCITY) {
             stopAndResetEncoder(motor);
         }
+
         // Stop and reset the encoder when Y is released.
         if (gamepad1.yWasReleased()) {
             stopAndResetEncoder(motor);
