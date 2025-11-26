@@ -44,6 +44,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * OpMode to test the effect of  changing PIDF values for motor encoders.
  * Use it to experiment with PIDF values.
  */
+//TODO: Add data logging.
 @TeleOp(name = "PIDF Velocity", group = "test")
 @Configurable
 //@Disabled
@@ -53,7 +54,7 @@ public class PIDFVelocity extends OpMode {
     private double maxVelocity = 0;
     private DcMotorEx motor;
     PIDFCoefficients pidfVelocityCoefficients;
-    private final double RUN_VELOCITY = .8f;
+    private final double RUN_VELOCITY = .9f;
 
     public static float velocityP = 1.063f;
     public static float velocityI = 1.063f;
@@ -110,15 +111,20 @@ public class PIDFVelocity extends OpMode {
     public void loop() {
         updatePIDF();
         telemetry.addData("Status", "Run Time: " + runtime);
+        // Start the motor at RUN_VELOCITY when the left bumper is released.
         if (gamepad1.leftBumperWasReleased()) {
             motor.setVelocity(maxVelocity * RUN_VELOCITY);
         }
-
-        if (motor.getVelocity() == maxVelocity * RUN_VELOCITY) {
+        // Start the timer when the motor reaches max velocity.
+        if (motor.getVelocity() >= maxVelocity * RUN_VELOCITY) {
+            timer.reset();
+        }
+        // Stop and reset the encoder after 2 seconds at max velocity.
+        if (timer.seconds() >= 2) {
             stopAndResetEncoder(motor);
         }
-
-        if (gamepad1.yWasReleased() || motor.getVelocity() == RUN_VELOCITY) {
+        // Stop and reset the encoder when Y is released.
+        if (gamepad1.yWasReleased()) {
             stopAndResetEncoder(motor);
         }
 
