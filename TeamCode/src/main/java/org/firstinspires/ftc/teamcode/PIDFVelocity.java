@@ -114,6 +114,10 @@ public class PIDFVelocity extends OpMode {
             motor.setVelocity(maxVelocity * RUN_VELOCITY);
         }
 
+        if (motor.getVelocity() == maxVelocity * RUN_VELOCITY) {
+            stopAndResetEncoder(motor);
+        }
+
         if (gamepad1.yWasReleased() || motor.getVelocity() == RUN_VELOCITY) {
             stopAndResetEncoder(motor);
         }
