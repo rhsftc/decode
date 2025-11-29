@@ -60,7 +60,7 @@ public class PIDFVelocity extends OpMode {
     private final double RUN_VELOCITY = .9f;
 
     public static float velocityP = 1.063f;
-    public static float velocityI = 3f;
+    public static float velocityI = 1.063f;
     public static float velocityD = 0;
     public static float velocityF = 10.63f;
 
