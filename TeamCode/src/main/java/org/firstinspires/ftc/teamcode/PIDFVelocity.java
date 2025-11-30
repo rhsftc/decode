@@ -59,7 +59,7 @@ public class PIDFVelocity extends OpMode {
 
     double[] velocityCoefficients = new double[4];
     double[] feedforwardCoefficients = new double[4];
-    private final double RUN_VELOCITY = .9f;
+    private final double RUN_VELOCITY = .8f;
 
     public static float velocityP = 1.063f;
     public static float velocityI = 1.063f;
@@ -213,6 +213,6 @@ public class PIDFVelocity extends OpMode {
      * */
     private void updatePIDF() {
 //        motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-        motor.setFeedforwardCoefficients(.05, .01, .01);
+        motor.setFeedforwardCoefficients(.06, .01, .01);
     }
 }
