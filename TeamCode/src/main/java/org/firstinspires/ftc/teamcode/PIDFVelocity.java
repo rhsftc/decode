@@ -37,6 +37,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -50,19 +52,28 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 //@Disabled
 public class PIDFVelocity extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
-    private double maxVelocity = 0;
-    private DcMotorEx motor;
+    private MotorEx motor;
+    private double achievableTicksPerSecond;
     Datalogger datalogger;
     String datalogFilename = "PIDFDatalog";   // modify name for each run
-    private boolean isRunning = false;
 
-    PIDFCoefficients pidfVelocityCoefficients;
+    double[] velocityCoefficients = new double[4];
+    double[] feedforwardCoefficients = new double[4];
     private final double RUN_VELOCITY = .9f;
 
     public static float velocityP = 1.063f;
     public static float velocityI = 1.063f;
     public static float velocityD = 0;
     public static float velocityF = 10.63f;
+
+    private enum RunState {
+        WAITING_TO_START,
+        RUNNING,
+        DELAYING_AFTER_RUNNING,
+        STOP
+    }
+
+    RunState runState = RunState.WAITING_TO_START;
 
     /**
      * This method will be called once, when the INIT button is pressed.
@@ -72,18 +83,18 @@ public class PIDFVelocity extends OpMode {
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
-        motor = hardwareMap.get(DcMotorEx.class, "motor");
-        motor.setDirection(DcMotorSimple.Direction.FORWARD);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // Get the default PIDF coefficients for velocity control.
-        pidfVelocityCoefficients = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfVelocityCoefficients);
+        motor = new MotorEx(hardwareMap, "motor", Motor.GoBILDA.RPM_435);
+        motor.setInverted(false);
+        motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
+        motor.setRunMode(Motor.RunMode.VelocityControl);
+        achievableTicksPerSecond = motor.ACHIEVABLE_MAX_TICKS_PER_SECOND;
+        velocityCoefficients = motor.getVeloCoefficients();
+        feedforwardCoefficients = motor.getFeedforwardCoefficients();
+
         telemetry.addLine("Left bumper - Start/Stop");
-        telemetry.addLine("Y - Stop and Reset");
-        telemetry.addData("Default PIDF Velocity Coefficients:", pidfVelocityCoefficients);
+        telemetry.addData("Default Velocity Coefficients:", velocityCoefficients[0]);
+        telemetry.addData("Default FF Coefficients:", feedforwardCoefficients[0]);
         telemetry.update();
-        // Find the maximum velocity of the motor.
-        findMaxVelocity();
         stopAndResetEncoder(motor);
 
         // Get the default PIDF's and then set new values for velocity control.
@@ -113,38 +124,46 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void loop() {
-        updatePIDF();
+//        updatePIDF();
         logData();
-        // Start the motor at RUN_VELOCITY when the left bumper is released.
-        if (gamepad1.leftBumperWasReleased()) {
-            isRunning = true;
-            motor.setVelocity(maxVelocity * RUN_VELOCITY);
-            runtime.reset();
+        switch (runState) {
+            case WAITING_TO_START:
+                if (gamepad1.left_bumper) {
+                    motor.set(RUN_VELOCITY);
+                    runtime.reset();
+                    runState = RunState.RUNNING;
+                }
+                break;
+
+            case RUNNING:
+                motor.set(RUN_VELOCITY);
+                if (runtime.milliseconds() >= 3000) {
+                    motor.set(0);
+                    runtime.reset();
+                    runState = RunState.DELAYING_AFTER_RUNNING;
+                }
+                break;
+
+            case DELAYING_AFTER_RUNNING:
+                if (runtime.milliseconds() >= 500) {
+                    runState = RunState.STOP;
+                }
+                break;
+
+            case STOP:
+                motor.stopMotor();
+                runState = RunState.WAITING_TO_START;
+                break;
         }
 
-        // Log data for 3 seconds.
-        if (runtime.milliseconds() >= 3000) {
-            motor.setVelocity(0);
-        }
-
-        // Stop logging after 500 milliseconds.
-        if (isRunning && (runtime.milliseconds() >= 3500)) {
-            isRunning = false;
-        }
-
-        // Stop and reset the encoder when Y is released.
-        if (gamepad1.yWasReleased()) {
-            isRunning = false;
-            stopAndResetEncoder(motor);
-        }
-
-        telemetry.addData("Max Velocity", maxVelocity);
+        telemetry.addData("Max RPM", motor.getMaxRPM());
+        telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
+        telemetry.addData("Achievable Ticks", motor.ACHIEVABLE_MAX_TICKS_PER_SECOND);
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
-        telemetry.addData("Power", "%6.2f", motor.getPower());
-        telemetry.addData("Busy", motor.isBusy());
+        telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
         telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
-        telemetry.addData("Mode", motor.getMode());
-        telemetry.addData("PIDF Run Using", motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+        telemetry.addData("Velocity Coefficients", velocityCoefficients[0]);
+        telemetry.addData("FF Coefficients", velocityCoefficients[0]);
         telemetry.update();
     }
 
@@ -159,16 +178,10 @@ public class PIDFVelocity extends OpMode {
         stopAndResetEncoder(motor);
     }
 
-    /**
-     * This seems to be the only way to reliably stop a motor and reset the encoder.
-     * This wos only tested on a goBilda motor.
-     *
-     * @param motor
-     */
-    private void stopAndResetEncoder(DcMotorEx motor) {
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setPower(0);
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    /// @param motor
+    private void stopAndResetEncoder(MotorEx motor) {
+        motor.setRunMode(Motor.RunMode.RawPower);
+        motor.stopAndResetEncoder();
     }
 
     /*
@@ -176,9 +189,10 @@ public class PIDFVelocity extends OpMode {
      * */
     private void initDatalogger() {
         // Name the fields (column labels) generated by this OpMode.
-        datalogger.addField("Max Velocity");
+        datalogger.addField("Target Velocity");
         datalogger.addField("Velocity");
         datalogger.addField("Current (mA)");
+        datalogger.addField("Acceleration");
         datalogger.firstLine();                        // end first line (row)
     }
 
@@ -186,35 +200,19 @@ public class PIDFVelocity extends OpMode {
      * Log data to the datalogger when isRunning = true.
      * */
     private void logData() {
-        if (isRunning) {
-            datalogger.addField(maxVelocity * RUN_VELOCITY);
+        if (runState == RunState.RUNNING || runState == RunState.DELAYING_AFTER_RUNNING) {
+            datalogger.addField(achievableTicksPerSecond * RUN_VELOCITY);
             datalogger.addField(motor.getVelocity());
             datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
+            datalogger.addField(motor.getAcceleration());
             datalogger.newLine();
         }
     }
 
     /*
-     * Run the motor at full power for 3 seconds to find its maximum velocity.
-     * */
-    private void findMaxVelocity() {
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setPower(1);
-        runtime.reset();
-        double velocity;
-        while (runtime.seconds() < 3) {
-            velocity = motor.getVelocity();
-            if (velocity > maxVelocity) {
-                maxVelocity = velocity;
-            }
-        }
-
-        motor.setPower(0);
-    }
-
-    /*
      * */
     private void updatePIDF() {
-        motor.setVelocityPIDFCoefficients(velocityP, velocityI, velocityD, velocityF);
+//        motor.setVeloCoefficients(velocityP, velocityI, velocityD);
+        motor.setFeedforwardCoefficients(.05, .01, .01);
     }
 }
