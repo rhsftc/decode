@@ -65,8 +65,7 @@ public class PIDFVelocity extends OpMode {
     private enum RunState {
         WAITING_TO_START,
         RUNNING,
-        DELAYING_AFTER_RUNNING,
-        STOP
+        DELAYING_AFTER_RUNNING
     }
 
     RunState runState = RunState.WAITING_TO_START;
@@ -97,8 +96,8 @@ public class PIDFVelocity extends OpMode {
         telemetry.addData("Default FF kA:", feedforwardCoefficients[2]);
         telemetry.update();
 
-        // Get the default PIDF's and then set new values for velocity control.
-        updatePIDF();
+        // Set new values for velocity control.
+//        updatePIDF();
     }
 
     /**
@@ -124,11 +123,10 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void loop() {
-//        updatePIDF();
         logData();
         switch (runState) {
             case WAITING_TO_START:
-                if (gamepad1.left_bumper) {
+                if (gamepad1.leftBumperWasReleased()) {
                     motor.set(RUN_VELOCITY);
                     runtime.reset();
                     runState = RunState.RUNNING;
@@ -146,13 +144,12 @@ public class PIDFVelocity extends OpMode {
 
             case DELAYING_AFTER_RUNNING:
                 if (runtime.milliseconds() >= 500) {
-                    runState = RunState.STOP;
+                    motor.stopMotor();
+                    runState = RunState.WAITING_TO_START;
                 }
                 break;
 
-            case STOP:
-                motor.stopMotor();
-                runState = RunState.WAITING_TO_START;
+            default:
                 break;
         }
 
