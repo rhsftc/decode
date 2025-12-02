@@ -55,12 +55,12 @@ public class PIDFVelocity extends OpMode {
 
     double[] velocityCoefficients = new double[4];
     double[] feedforwardCoefficients = new double[4];
-    private final double RUN_VELOCITY = .8f;
+    private final double RUN_VELOCITY = .7f;
 
-    public static float velocityP = 1.063f;
-    public static float velocityI = 1.063f;
-    public static float velocityD = 0;
-    public static float velocityF = 10.63f;
+    public static double velocityP = 20.0f;
+    public static double velocityI = 0f;
+    public static double velocityD = 0f;
+    public static double ffV = .7f;
 
     private enum RunState {
         WAITING_TO_START,
@@ -81,8 +81,9 @@ public class PIDFVelocity extends OpMode {
 
         motor = new MotorEx(hardwareMap, "motor", Motor.GoBILDA.RPM_435);
         motor.setInverted(false);
+        stopAndResetEncoder(motor);
         motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
-        motor.setRunMode(Motor.RunMode.VelocityControl);
+        motor.setRunMode(MotorEx.RunMode.VelocityControl);
         achievableTicksPerSecond = motor.ACHIEVABLE_MAX_TICKS_PER_SECOND;
         velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
@@ -95,7 +96,6 @@ public class PIDFVelocity extends OpMode {
         telemetry.addData("Default FF kV:", feedforwardCoefficients[1]);
         telemetry.addData("Default FF kA:", feedforwardCoefficients[2]);
         telemetry.update();
-        stopAndResetEncoder(motor);
 
         // Get the default PIDF's and then set new values for velocity control.
         updatePIDF();
@@ -129,14 +129,14 @@ public class PIDFVelocity extends OpMode {
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.left_bumper) {
-                    motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
+                    motor.set(RUN_VELOCITY);
                     runtime.reset();
                     runState = RunState.RUNNING;
                 }
                 break;
 
             case RUNNING:
-                motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
+                motor.set(RUN_VELOCITY);
                 if (runtime.milliseconds() >= 3000) {
                     motor.set(0);
                     runtime.reset();
@@ -158,7 +158,7 @@ public class PIDFVelocity extends OpMode {
 
         telemetry.addData("Max RPM", motor.getMaxRPM());
         telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
-        telemetry.addData("Achievable Ticks", motor.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+        telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
         telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
         telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
@@ -206,7 +206,7 @@ public class PIDFVelocity extends OpMode {
      * */
     private void logData() {
         if (runState == RunState.RUNNING || runState == RunState.DELAYING_AFTER_RUNNING) {
-            datalogger.addField(achievableTicksPerSecond * RUN_VELOCITY);
+            datalogger.addField(RUN_VELOCITY);
             datalogger.addField(motor.getVelocity());
             datalogger.addField(motor.getCorrectedVelocity());
             datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
@@ -219,6 +219,6 @@ public class PIDFVelocity extends OpMode {
      * */
     private void updatePIDF() {
         motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-        motor.setFeedforwardCoefficients(.02, 10.063, .01);
+        motor.setFeedforwardCoefficients(0, ffV);
     }
 }
