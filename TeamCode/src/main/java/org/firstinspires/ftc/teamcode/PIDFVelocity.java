@@ -57,10 +57,10 @@ public class PIDFVelocity extends OpMode {
     double[] feedforwardCoefficients = new double[4];
     private final double RUN_VELOCITY = .7f;
 
-    public static double velocityP = 20.0f;
+    public static double velocityP = 1;
     public static double velocityI = 0f;
     public static double velocityD = 0f;
-    public static double ffV = .7f;
+    public static double ffV = .5f;
 
     private enum RunState {
         WAITING_TO_START,
