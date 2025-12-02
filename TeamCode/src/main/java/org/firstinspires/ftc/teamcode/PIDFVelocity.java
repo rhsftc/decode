@@ -55,12 +55,12 @@ public class PIDFVelocity extends OpMode {
 
     double[] velocityCoefficients = new double[4];
     double[] feedforwardCoefficients = new double[4];
-    private final double RUN_VELOCITY = .7f;
+    private final double RUN_VELOCITY = 2400;
 
     public static double velocityP = 1;
     public static double velocityI = 0f;
     public static double velocityD = 0f;
-    public static double ffV = .5f;
+    public static double ffV = 0f;
 
     private enum RunState {
         WAITING_TO_START,
@@ -127,14 +127,14 @@ public class PIDFVelocity extends OpMode {
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasReleased()) {
-                    motor.set(RUN_VELOCITY);
+                    motor.setVelocity(RUN_VELOCITY);
                     runtime.reset();
                     runState = RunState.RUNNING;
                 }
                 break;
 
             case RUNNING:
-                motor.set(RUN_VELOCITY);
+                motor.setVelocity(RUN_VELOCITY);
                 if (runtime.milliseconds() >= 3000) {
                     motor.set(0);
                     runtime.reset();
