@@ -30,7 +30,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -57,8 +59,8 @@ public class PIDFVelocity extends OpMode {
     double[] velocityCoefficients = new double[4];
     double[] feedforwardCoefficients = new double[4];
     private final double RUN_VELOCITY = .8;
-    private final PanelsTelemetry panelsTelemetry = PanelsTelemetry.INSTANCE;
-
+    public final PanelsTelemetry panelsTelemetry = PanelsTelemetry.INSTANCE;
+    public TelemetryManager telemetryManager;
     public static double velocityP = 1.063;
     public static double velocityI = 1.063;
     public static double velocityD = 0;
@@ -77,6 +79,7 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void init() {
+        telemetryManager = panelsTelemetry.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
@@ -97,7 +100,8 @@ public class PIDFVelocity extends OpMode {
         telemetry.addData("Default FF kV:", feedforwardCoefficients[1]);
         telemetry.addData("Default FF kA:", feedforwardCoefficients[2]);
         telemetry.update();
-        panelsTelemetry.getTelemetry().update(telemetry);
+        telemetryManager.addData("velocity", motor.getVelocity());
+        telemetryManager.update(telemetry);
 
         // Set new values for velocity control.
         updatePIDF();
