@@ -55,12 +55,12 @@ public class PIDFVelocity extends OpMode {
 
     double[] velocityCoefficients = new double[4];
     double[] feedforwardCoefficients = new double[4];
-    private final double RUN_VELOCITY = 2400;
+    private final double RUN_VELOCITY = .8;
 
-    public static double velocityP = 1;
-    public static double velocityI = 0f;
-    public static double velocityD = 0f;
-    public static double ffV = 0f;
+    public static double velocityP = 1.063;
+    public static double velocityI = 1.063;
+    public static double velocityD = 0;
+    public static double ffV = 10.63;
 
     private enum RunState {
         WAITING_TO_START,
@@ -127,24 +127,24 @@ public class PIDFVelocity extends OpMode {
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasReleased()) {
-                    motor.setVelocity(RUN_VELOCITY);
+                    motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
                     runtime.reset();
                     runState = RunState.RUNNING;
                 }
                 break;
 
             case RUNNING:
-                motor.setVelocity(RUN_VELOCITY);
+                motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
                 if (runtime.milliseconds() >= 3000) {
-                    motor.set(0);
+                    motor.stopMotor();
                     runtime.reset();
                     runState = RunState.DELAYING_AFTER_RUNNING;
                 }
                 break;
 
             case DELAYING_AFTER_RUNNING:
+                // Give some time for the motor to stop.
                 if (runtime.milliseconds() >= 500) {
-                    motor.stopMotor();
                     runState = RunState.WAITING_TO_START;
                 }
                 break;
@@ -203,7 +203,7 @@ public class PIDFVelocity extends OpMode {
      * */
     private void logData() {
         if (runState == RunState.RUNNING || runState == RunState.DELAYING_AFTER_RUNNING) {
-            datalogger.addField(RUN_VELOCITY);
+            datalogger.addField(RUN_VELOCITY * achievableTicksPerSecond);
             datalogger.addField(motor.getVelocity());
             datalogger.addField(motor.getCorrectedVelocity());
             datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
