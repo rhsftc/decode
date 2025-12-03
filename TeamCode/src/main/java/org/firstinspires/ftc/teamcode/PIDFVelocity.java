@@ -97,7 +97,7 @@ public class PIDFVelocity extends OpMode {
         telemetry.update();
 
         // Set new values for velocity control.
-//        updatePIDF();
+        updatePIDF();
     }
 
     /**
@@ -216,6 +216,6 @@ public class PIDFVelocity extends OpMode {
      * */
     private void updatePIDF() {
         motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-        motor.setFeedforwardCoefficients(0, ffV);
+//        motor.setFeedforwardCoefficients(0, ffV);
     }
 }
