@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -50,6 +51,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @Configurable
 //@Disabled
 public class PIDFVelocity extends OpMode {
+    private PanelsGamepad panelsGamepad = PanelsGamepad.INSTANCE;
     private final ElapsedTime runtime = new ElapsedTime();
     private MotorEx motor;
     private double achievableTicksPerSecond;
