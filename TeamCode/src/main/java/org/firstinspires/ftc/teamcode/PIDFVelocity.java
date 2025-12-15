@@ -30,8 +30,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.gamepad.PanelsGamepad;
-import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -51,7 +49,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @Configurable
 //@Disabled
 public class PIDFVelocity extends OpMode {
-    private PanelsGamepad panelsGamepad = PanelsGamepad.INSTANCE;
     private final ElapsedTime runtime = new ElapsedTime();
     private MotorEx motor;
     private double achievableTicksPerSecond;
@@ -63,10 +60,10 @@ public class PIDFVelocity extends OpMode {
     private final double RUN_VELOCITY = .8;
     public final PanelsTelemetry panelsTelemetry = PanelsTelemetry.INSTANCE;
     public TelemetryManager telemetryManager;
-    public static double velocityP = 1.063;
-    public static double velocityI = 1.063;
-    public static double velocityD = 0;
-    public static double ffV = 10.63;
+    public static double velocityP = 0.06;
+    public static double velocityI = 0.03;
+    public static double velocityD = 0.0;
+    public static double ffV = 1.0;
 
     private enum RunState {
         WAITING_TO_START,
@@ -94,16 +91,14 @@ public class PIDFVelocity extends OpMode {
         velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
 
-        telemetry.addLine("Left bumper - Start/Stop");
-        telemetry.addData("Default Velocity kP:", velocityCoefficients[0]);
-        telemetry.addData("Default Velocity kI:", velocityCoefficients[1]);
-        telemetry.addData("Default Velocity kD:", velocityCoefficients[2]);
-        telemetry.addData("Default FF kS:", feedforwardCoefficients[0]);
-        telemetry.addData("Default FF kV:", feedforwardCoefficients[1]);
-        telemetry.addData("Default FF kA:", feedforwardCoefficients[2]);
+        telemetry.addLine("Left bumper - Start");
+//        telemetry.addData("Default Velocity kP:", velocityCoefficients[0]);
+//        telemetry.addData("Default Velocity kI:", velocityCoefficients[1]);
+//        telemetry.addData("Default Velocity kD:", velocityCoefficients[2]);
+//        telemetry.addData("Default FF kS:", feedforwardCoefficients[0]);
+//        telemetry.addData("Default FF kV:", feedforwardCoefficients[1]);
+//        telemetry.addData("Default FF kA:", feedforwardCoefficients[2]);
         telemetry.update();
-        telemetryManager.addData("velocity", motor.getVelocity());
-        telemetryManager.update(telemetry);
 
         // Set new values for velocity control.
         updatePIDF();
@@ -171,9 +166,9 @@ public class PIDFVelocity extends OpMode {
         telemetry.addData("Velocity kP", velocityCoefficients[0]);
         telemetry.addData("Velocity kI", velocityCoefficients[1]);
         telemetry.addData("Velocity kD", velocityCoefficients[2]);
-        telemetry.addData("FF kS", velocityCoefficients[0]);
-        telemetry.addData("FF kV", velocityCoefficients[1]);
-        telemetry.addData("FF kA", velocityCoefficients[2]);
+        telemetry.addData("FF kS", feedforwardCoefficients[0]);
+        telemetry.addData("FF kV", feedforwardCoefficients[1]);
+        telemetry.addData("FF kA", feedforwardCoefficients[2]);
         telemetry.update();
     }
 
@@ -225,6 +220,8 @@ public class PIDFVelocity extends OpMode {
      * */
     private void updatePIDF() {
         motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-//        motor.setFeedforwardCoefficients(0, ffV);
+        motor.setFeedforwardCoefficients(1, ffV);
+        velocityCoefficients= motor.getVeloCoefficients();
+        feedforwardCoefficients = motor.getFeedforwardCoefficients();
     }
 }
