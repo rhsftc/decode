@@ -32,6 +32,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.gamepad.ToggleButtonReader;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -110,29 +113,45 @@ public class AprilTagLocalization extends LinearOpMode {
      * The variable to store our instance of the vision portal.
      */
     private VisionPortal visionPortal;
+    // Flag to indicate if we are showing navigation info.
+    private boolean isNavigate = false;
+    private ToggleButtonReader navigateToggle;
 
     @Override
     public void runOpMode() {
-
+        final GamepadEx gamepadEx = new GamepadEx(gamepad1);
+        navigateToggle = new ToggleButtonReader(gamepadEx, GamepadKeys.Button.A);
         initAprilTag();
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addLine("Press D-pad Up to resume streaming");
+        telemetry.addLine("Press D-pad Down to pause streaming");
+        telemetry.addLine("a: Toggle navigation info");
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
 
         while (opModeIsActive()) {
+            gamepadEx.readButtons();
 
-            telemetryAprilTag();
+            if (isNavigate) {
+                isAprilTagAligned();
+            } else {
+                telemetryAprilTag();
+            }
 
             // Push telemetry to the Driver Station.
             telemetry.update();
 
+            if (navigateToggle.wasJustReleased()) {
+                isNavigate = !isNavigate;
+            }
+
             // Save CPU resources; can resume streaming when needed.
-            if (gamepad1.dpad_down) {
+            if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
                 visionPortal.stopStreaming();
-            } else if (gamepad1.dpad_up) {
+            } else if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
                 visionPortal.resumeStreaming();
             }
 
@@ -282,8 +301,7 @@ public class AprilTagLocalization extends LinearOpMode {
                     if (rangeError <= rangeTolerance && bearingError <= bearingTolerance && yawError <= yawTolerance) {
                         aligned = true;
                     } else {
-                        //TODO: Make sure the directions are correct.
-                        // The parameters are set to only center. You may want to add range control as well.
+                        //TODO: Add telemetry.
 //                        mecanumDrive.driveRobotCentric(0, 0, bearingError);
                     }
 
