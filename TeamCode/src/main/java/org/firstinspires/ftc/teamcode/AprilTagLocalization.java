@@ -103,6 +103,8 @@ public class AprilTagLocalization extends LinearOpMode {
      * The variable to store our instance of the AprilTag processor.
      */
     private AprilTagProcessor aprilTag;
+    final double DESIRED_SHORT_DISTANCE = 24.0;
+    private static final int DESIRED_TAG_ID = -1;
 
     /**
      * The variable to store our instance of the vision portal.
@@ -155,6 +157,7 @@ public class AprilTagLocalization extends LinearOpMode {
                 .setDrawAxes(false)
                 .setDrawCubeProjection(true)
                 .setDrawTagOutline(true)
+                .setDrawTagID(true)
                 //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
                 //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
@@ -226,6 +229,8 @@ public class AprilTagLocalization extends LinearOpMode {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 // Only use tags that don't have Obelisk in them
                 if (!detection.metadata.name.contains("Obelisk")) {
+                    telemetry.addData("id", detection.id);
+                    telemetry.addData("tag orientation", detection.metadata.fieldOrientation);
                     telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
                             detection.robotPose.getPosition().x,
                             detection.robotPose.getPosition().y,
@@ -251,4 +256,42 @@ public class AprilTagLocalization extends LinearOpMode {
 
     }   // end method telemetryAprilTag()
 
+    /**
+     * Check to see if we are aligned to the desired AprilTag.
+     *
+     * @return true if aligned.
+     */
+    private boolean isAprilTagAligned() {
+        boolean aligned = false;
+        // Assume there are 2 launch distances: short and long
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                if ((-1 < 0) || (detection.id == DESIRED_TAG_ID)) {
+                    // Check if the tag is within alignment tolerances
+                    double rangeError = Math.abs(detection.ftcPose.range - DESIRED_SHORT_DISTANCE);
+                    double bearingError = Math.abs(detection.ftcPose.bearing);
+                    double yawError = Math.abs(detection.ftcPose.yaw);
+
+                    //TODO: Adjust tolerances as needed
+                    // Define tolerances
+                    double rangeTolerance = 2.0; // inches
+                    double bearingTolerance = 5.0; // degrees
+                    double yawTolerance = 12.0; // degrees
+
+                    if (rangeError <= rangeTolerance && bearingError <= bearingTolerance && yawError <= yawTolerance) {
+                        aligned = true;
+                    } else {
+                        //TODO: Make sure the directions are correct.
+                        // The parameters are set to only center. You may want to add range control as well.
+//                        mecanumDrive.driveRobotCentric(0, 0, bearingError);
+                    }
+
+                    break; // No need to check further tags
+                }
+            }
+        }
+
+        return aligned;
+    }
 }   // end class
