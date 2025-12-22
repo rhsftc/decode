@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -280,6 +282,7 @@ public class AprilTagLocalization extends LinearOpMode {
      *
      * @return true if aligned.
      */
+    @SuppressLint("DefaultLocale")
     private boolean isAprilTagAligned() {
         boolean aligned = false;
         // Assume there are 2 launch distances: short and long
@@ -302,6 +305,20 @@ public class AprilTagLocalization extends LinearOpMode {
                         aligned = true;
                     } else {
                         //TODO: Add telemetry.
+                        telemetry.addData("id", detection.id);
+                        telemetry.addData("tag orientation", detection.metadata.fieldOrientation);
+                        telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
+                                detection.robotPose.getPosition().x,
+                                detection.robotPose.getPosition().y,
+                                detection.robotPose.getPosition().z));
+                        telemetry.addLine(String.format("RB %6.1f (inches) %6.1f (deg) ",
+                                detection.ftcPose.range,
+                                detection.ftcPose.bearing));
+                        telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
+                                detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+
 //                        mecanumDrive.driveRobotCentric(0, 0, bearingError);
                     }
 
