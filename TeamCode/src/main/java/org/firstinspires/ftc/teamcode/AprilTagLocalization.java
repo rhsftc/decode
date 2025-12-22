@@ -136,6 +136,7 @@ public class AprilTagLocalization extends LinearOpMode {
 
         while (opModeIsActive()) {
             gamepadEx.readButtons();
+            navigateToggle.readValue();
 
             if (isNavigate) {
                 isAprilTagAligned();
@@ -146,9 +147,7 @@ public class AprilTagLocalization extends LinearOpMode {
             // Push telemetry to the Driver Station.
             telemetry.update();
 
-            if (navigateToggle.wasJustReleased()) {
-                isNavigate = !isNavigate;
-            }
+            isNavigate = navigateToggle.getState();
 
             // Save CPU resources; can resume streaming when needed.
             if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
@@ -250,8 +249,10 @@ public class AprilTagLocalization extends LinearOpMode {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 // Only use tags that don't have Obelisk in them
                 if (!detection.metadata.name.contains("Obelisk")) {
+                    telemetry.addData("Navigate", isNavigate);
                     telemetry.addData("id", detection.id);
                     telemetry.addData("tag orientation", detection.metadata.fieldOrientation);
+                    telemetry.addData("tag position", detection.metadata.fieldPosition);
                     telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
                             detection.robotPose.getPosition().x,
                             detection.robotPose.getPosition().y,
@@ -292,35 +293,47 @@ public class AprilTagLocalization extends LinearOpMode {
                 if ((-1 < 0) || (detection.id == DESIRED_TAG_ID)) {
                     // Check if the tag is within alignment tolerances
                     double rangeError = Math.abs(detection.ftcPose.range - DESIRED_SHORT_DISTANCE);
-                    double bearingError = Math.abs(detection.ftcPose.bearing);
+                    double bearing = detection.ftcPose.bearing;
+                    double bearingError = Math.abs(bearing);
                     double yawError = Math.abs(detection.ftcPose.yaw);
 
                     //TODO: Adjust tolerances as needed
                     // Define tolerances
+                    // Possibly enable range and yaw later.
                     double rangeTolerance = 2.0; // inches
                     double bearingTolerance = 5.0; // degrees
                     double yawTolerance = 12.0; // degrees
 
-                    if (rangeError <= rangeTolerance && bearingError <= bearingTolerance && yawError <= yawTolerance) {
+                    // Check for all tolerances.
+//                    if (rangeError <= rangeTolerance && bearingError <= bearingTolerance && yawError <= yawTolerance) {
+//                        aligned = true;
+//                    }
+
+                    // Check bearing only for now
+                    if (bearingError <= bearingTolerance) {
                         aligned = true;
                     } else {
-                        //TODO: Add telemetry.
-                        telemetry.addData("id", detection.id);
-                        telemetry.addData("tag orientation", detection.metadata.fieldOrientation);
-                        telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
-                                detection.robotPose.getPosition().x,
-                                detection.robotPose.getPosition().y,
-                                detection.robotPose.getPosition().z));
-                        telemetry.addLine(String.format("RB %6.1f (inches) %6.1f (deg) ",
-                                detection.ftcPose.range,
-                                detection.ftcPose.bearing));
-                        telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
-                                detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
-                                detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
-                                detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
-
-//                        mecanumDrive.driveRobotCentric(0, 0, bearingError);
+//                        // Not aligned, so drive to correct
+//                        mecanumDrive.driveRobotCentric(0, 0, -bearing);
                     }
+
+                    telemetry.addData("Navigate", isNavigate);
+                    telemetry.addData("Aligned", aligned);
+                    telemetry.addData("id", detection.id);
+                    telemetry.addData("tag orientation", detection.metadata.fieldOrientation);
+                    telemetry.addData("tag position", detection.metadata.fieldPosition);
+                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
+                            detection.robotPose.getPosition().x,
+                            detection.robotPose.getPosition().y,
+                            detection.robotPose.getPosition().z));
+                    telemetry.addLine(String.format("RBE %6.1f (inches) %6.1f (deg) %6.1f (deg)",
+                            detection.ftcPose.range,
+                            bearing,
+                            -bearing));
+                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
+                            detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                            detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
 
                     break; // No need to check further tags
                 }
