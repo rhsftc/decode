@@ -46,6 +46,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
@@ -109,7 +110,6 @@ public class AprilTagLocalization extends LinearOpMode {
      */
     private AprilTagProcessor aprilTag;
     final double DESIRED_SHORT_DISTANCE = 24.0;
-    private static final int DESIRED_TAG_ID = -1;
 
     /**
      * The variable to store our instance of the vision portal.
@@ -178,8 +178,8 @@ public class AprilTagLocalization extends LinearOpMode {
                 .setDrawCubeProjection(true)
                 .setDrawTagOutline(true)
                 .setDrawTagID(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary())
                 //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
                 .setCameraPose(cameraPosition, cameraOrientation)
 
@@ -290,7 +290,8 @@ public class AprilTagLocalization extends LinearOpMode {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                if ((-1 < 0) || (detection.id == DESIRED_TAG_ID)) {
+                // Only use tags that are for navigation
+                if (detection.id == 20 || detection.id == 24) {
                     // Check if the tag is within alignment tolerances
                     double rangeError = Math.abs(detection.ftcPose.range - DESIRED_SHORT_DISTANCE);
                     double bearing = detection.ftcPose.bearing;
@@ -309,11 +310,11 @@ public class AprilTagLocalization extends LinearOpMode {
 //                        aligned = true;
 //                    }
 
-                    // Check bearing only for now
+                    // Check only bearing for now
                     if (bearingError <= bearingTolerance) {
                         aligned = true;
                     } else {
-//                        // Not aligned, so drive to correct
+                        // Manually move the camera in this opMode
 //                        mecanumDrive.driveRobotCentric(0, 0, -bearing);
                     }
 
