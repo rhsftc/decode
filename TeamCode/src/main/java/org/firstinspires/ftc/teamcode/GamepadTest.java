@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -41,11 +40,12 @@ import com.seattlesolvers.solverslib.gamepad.TriggerReader;
  * Demonstrates gamepad edge detection using the GamepadEx and TriggerReader classes.
  */
 @TeleOp(name = "Gamepad Test", group = "test")
-@Disabled
+//@Disabled
 public class GamepadTest extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime telemetryTimer = new ElapsedTime();
+    private final long LOOP_DELAY = 2000; // milliseconds
     private GamepadEx gamepadEx;
     private TriggerReader triggerReader;
 
@@ -86,8 +86,9 @@ public class GamepadTest extends OpMode {
     @Override
     public void loop() {
         gamepadEx.readButtons();
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        if ((telemetryTimer.seconds() >= 1.0)) {
+//        triggerReader.readValue();
+//        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        if ((telemetryTimer.milliseconds() >= LOOP_DELAY)) {
             telemetryTimer.reset();
         } else {
             telemetryButtonData();
@@ -106,6 +107,9 @@ public class GamepadTest extends OpMode {
 
     private void telemetryButtonData() {
         // Add the status of the GamepadEx Left Bumper
+        telemetry.addData("Gamepad A Pressed", gamepad1.aWasPressed());
+        telemetry.addData("Gamepad A Released", gamepad1.aWasReleased());
+        telemetry.addData("Gamepad A", gamepad1.a);
         telemetry.addData("GamepadEx Left Bumper Pressed", gamepadEx.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER));
         telemetry.addData("GamepadEx Left Bumper Released", gamepadEx.wasJustReleased(GamepadKeys.Button.LEFT_BUMPER));
         telemetry.addData("GamepadEx Left Bumper IsDown", gamepadEx.isDown(GamepadKeys.Button.LEFT_BUMPER));
@@ -114,13 +118,13 @@ public class GamepadTest extends OpMode {
         telemetry.addLine();
 
         // Add the status of the GamepadEx Left Trigger
+        telemetry.addData("GamepadEx Left Trigger value", gamepadEx.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
         telemetry.addData("GamepadEx Left Trigger IsDown", triggerReader.isDown());
         telemetry.addData("GamepadEx Left Trigger Pressed", triggerReader.wasJustPressed());
         telemetry.addData("GamepadEx Left Trigger Released", triggerReader.wasJustReleased());
         telemetry.addData("GamepadEx Left Trigger Changed", triggerReader.stateJustChanged());
 
-        // Add a note that the telemetry is only updated every 2 seconds
-        telemetry.addLine("\nTelemetry is updated every second.");
+        telemetry.addData("\nTelemetry is updated every %5f milliseconds.", LOOP_DELAY);
 
         // Update the telemetry on the DS screen
         telemetry.update();
