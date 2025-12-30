@@ -37,16 +37,15 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.gamepad.TriggerReader;
 
 /*
- * Demonstrates gamepad edge detection using the GamepadEx and TriggerReader classes.
+ * Demonstrates gamepad edge detection using the EdgeGamepad class.
  */
 @TeleOp(name = "Gamepad Test", group = "test")
 //@Disabled
 public class GamepadTest extends OpMode {
-
+    private EdgeGamepad edgeGamepad;
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime telemetryTimer = new ElapsedTime();
     private final long LOOP_DELAY = 2000; // milliseconds
-    private GamepadEx gamepadEx;
     private TriggerReader triggerReader;
 
     /**
@@ -54,11 +53,8 @@ public class GamepadTest extends OpMode {
      */
     @Override
     public void init() {
+        edgeGamepad = new EdgeGamepad();
         telemetry.addData("Status", "Initialized");
-        gamepadEx = new GamepadEx(gamepad1);
-        triggerReader = new TriggerReader(
-                gamepadEx, GamepadKeys.Trigger.LEFT_TRIGGER
-        );
     }
 
     /**
@@ -85,9 +81,8 @@ public class GamepadTest extends OpMode {
      */
     @Override
     public void loop() {
-        gamepadEx.readButtons();
-//        triggerReader.readValue();
-//        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        edgeGamepad.update(gamepad1);
+
         if ((telemetryTimer.milliseconds() >= LOOP_DELAY)) {
             telemetryTimer.reset();
         } else {
@@ -107,23 +102,14 @@ public class GamepadTest extends OpMode {
 
     private void telemetryButtonData() {
         // Add the status of the GamepadEx Left Bumper
-        telemetry.addData("Gamepad A Pressed", gamepad1.aWasPressed());
-        telemetry.addData("Gamepad A Released", gamepad1.aWasReleased());
-        telemetry.addData("Gamepad A", gamepad1.a);
-        telemetry.addData("GamepadEx Left Bumper Pressed", gamepadEx.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER));
-        telemetry.addData("GamepadEx Left Bumper Released", gamepadEx.wasJustReleased(GamepadKeys.Button.LEFT_BUMPER));
-        telemetry.addData("GamepadEx Left Bumper IsDown", gamepadEx.isDown(GamepadKeys.Button.LEFT_BUMPER));
+        telemetry.addData("Edge A Pressed", edgeGamepad.aPressed());
+        telemetry.addData("Edge Left Bumper Pressed", edgeGamepad.leftBumperPressed());
 
         // Add an empty line to separate the buttons in telemetry
         telemetry.addLine();
 
         // Add the status of the GamepadEx Left Trigger
-        telemetry.addData("GamepadEx Left Trigger value", gamepadEx.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
-        telemetry.addData("GamepadEx Left Trigger IsDown", triggerReader.isDown());
-        telemetry.addData("GamepadEx Left Trigger Pressed", triggerReader.wasJustPressed());
-        telemetry.addData("GamepadEx Left Trigger Released", triggerReader.wasJustReleased());
-        telemetry.addData("GamepadEx Left Trigger Changed", triggerReader.stateJustChanged());
-
+        telemetry.addData("Edge Left Trigger Pressed", edgeGamepad.leftTriggerPressed());
         telemetry.addData("\nTelemetry is updated every %5f milliseconds.", LOOP_DELAY);
 
         // Update the telemetry on the DS screen
