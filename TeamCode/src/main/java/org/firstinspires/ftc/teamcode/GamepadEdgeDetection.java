@@ -36,9 +36,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.gamepad.TriggerReader;
 
 /*
  * This OpMode illustrates using edge detection on a gamepad.
+ * GamepadEx from SolversLib only works in linear OpModes.
  *
  * Simply checking the state of a gamepad button each time could result in triggering an effect
  * multiple times. Edge detection ensures that you only detect one button press, regardless of how
@@ -47,21 +51,24 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * There are two main types of edge detection. Rising edge detection will trigger when a button is
  * first pressed. Falling edge detection will trigger when the button is released.
  *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 
 //@Disabled
 @TeleOp(name = "Gamepad Edge Detection", group = "test")
 public class GamepadEdgeDetection extends LinearOpMode {
-private final long LOOP_DELAY = 2000; // milliseconds
+    private final long LOOP_DELAY = 500; // milliseconds
+    private GamepadEx gamepadEx;
+    private TriggerReader leftTriggerReader;
 
     @Override
     public void runOpMode() {
+        gamepadEx = new GamepadEx(gamepad1);
+        leftTriggerReader = new TriggerReader(gamepadEx, GamepadKeys.Trigger.LEFT_TRIGGER);
         // Wait for the DS start button to be pressed
         waitForStart();
 
         while (opModeIsActive()) {
+            gamepadEx.readButtons();
             // Update the telemetry
             telemetryButtonData();
 
@@ -71,24 +78,24 @@ private final long LOOP_DELAY = 2000; // milliseconds
     }
 
     public void telemetryButtonData() {
-        // Add the status of the Gamepad 1 Left Bumper
-        telemetry.addData("Gamepad A Pressed", gamepad1.aWasPressed());
-        telemetry.addData("Gamepad A Released", gamepad1.aWasReleased());
+        telemetry.addData("GamepadEx A Pressed", gamepadEx.wasJustPressed(GamepadKeys.Button.A));
+        telemetry.addData("GamepadEx A Released", gamepadEx.wasJustReleased(GamepadKeys.Button.A));
+        telemetry.addLine();
 
-        telemetry.addData("Gamepad 1 Left Bumper Pressed", gamepad1.leftBumperWasPressed());
-        telemetry.addData("Gamepad 1 Left Bumper Released", gamepad1.leftBumperWasReleased());
-        telemetry.addData("Gamepad 1 Left Bumper Status", gamepad1.left_bumper);
-        telemetry.addData("Guide", gamepad1.guide);
+        telemetry.addData("GamepadEx Left Bumper Pressed", gamepadEx.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER));
+        telemetry.addData("GamepadEx Left Bumper Released", gamepadEx.wasJustReleased(GamepadKeys.Button.LEFT_BUMPER));
+        telemetry.addData("GamepadEx Left Bumper Is down", gamepadEx.isDown(GamepadKeys.Button.LEFT_BUMPER));
         // Add an empty line to separate the buttons in telemetry
         telemetry.addLine();
 
-        // Add the status of the Gamepad 1 Right Bumper
-        telemetry.addData("Gamepad 1 Right Bumper Pressed", gamepad1.rightBumperWasPressed());
-        telemetry.addData("Gamepad 1 Right Bumper Released", gamepad1.rightBumperWasReleased());
-        telemetry.addData("Gamepad 1 Right Bumper Status", gamepad1.right_bumper);
+        //TODO: The trigger reader seems to fail.
+        telemetry.addData("GamepadEx Left trigger State changed", leftTriggerReader.stateJustChanged());
+        telemetry.addData("GamepadEx Left trigger Pressed", leftTriggerReader.wasJustPressed());
+        telemetry.addData("GamepadEx Left trigger Released", leftTriggerReader.wasJustReleased());
+        telemetry.addData("GamepadEx Left trigger Is down", leftTriggerReader.isDown());
 
         // Add a note that the telemetry is only updated every 2 seconds
-        telemetry.addData("\nTelemetry is updated every %5f milliseconds.", LOOP_DELAY);
+        telemetry.addData("\nTelemetry is updated every ", "%d", LOOP_DELAY);
 
         // Update the telemetry on the DS screen
         telemetry.update();
