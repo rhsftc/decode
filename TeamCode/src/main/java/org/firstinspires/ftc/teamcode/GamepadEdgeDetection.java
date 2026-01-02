@@ -42,7 +42,7 @@ import com.seattlesolvers.solverslib.gamepad.TriggerReader;
 
 /*
  * This OpMode illustrates using edge detection on a gamepad.
- * GamepadEx from SolversLib only works in linear OpModes.
+ * GamepadEx from SolversLib only works in linear OpModes!
  *
  * Simply checking the state of a gamepad button each time could result in triggering an effect
  * multiple times. Edge detection ensures that you only detect one button press, regardless of how

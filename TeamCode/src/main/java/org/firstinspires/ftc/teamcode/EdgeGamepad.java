@@ -2,8 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 /*
  * Edge detection for gamepad buttons and triggers.
- * Rising edge detection only.
- * It works in iterative opmodes. The SDK and SolversLib versions only work in linear opmodes.
+ * The SDK and SolversLib gamepad edge detection only work in linear opmodes.
+ * This class works in iterative opmodes.
+ * Only rising edge detection is currrently implemented.
  */
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -25,6 +26,7 @@ public class EdgeGamepad {
     public EdgeGamepad() {
     }
 
+    // Constructor with custom trigger threshold
     public EdgeGamepad(double triggerThreshold) {
         this.triggerThreshold = triggerThreshold;
     }
