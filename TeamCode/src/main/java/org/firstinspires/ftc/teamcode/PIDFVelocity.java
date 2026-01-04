@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -58,12 +56,13 @@ public class PIDFVelocity extends OpMode {
     private double[] velocityCoefficients = new double[4];
     private double[] feedforwardCoefficients = new double[4];
     // Control running and logging of the test.
-    private boolean isRunningTest = false;
-    private final double RUN_VELOCITY = .8;
-    private double velocityP = 0.06;
-    private double velocityI = 0.03;
+    private boolean isRunningTest = true;
+    private final double RUN_VELOCITY = .3;
+    private double velocityP = 0.0;
+    private double velocityI = 0.0;
     private double velocityD = 0.0;
-    private double ffV = 1.0;
+    private double ffS = 1.0;
+    private double ffV = 0.5;
 
 
     private enum RunPIDFState {
@@ -91,8 +90,7 @@ public class PIDFVelocity extends OpMode {
         velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
         feedforward = new SimpleMotorFeedforward(feedforwardCoefficients[0],
-                feedforwardCoefficients[1],
-                feedforwardCoefficients[2]);
+                feedforwardCoefficients[1]);
 
         telemetry.addLine("Left bumper: Start PIDF test and logging");
         telemetry.addLine("dpad left/right: Decrease/Increase velocity kP by 0.01");
@@ -118,6 +116,7 @@ public class PIDFVelocity extends OpMode {
     @Override
     public void start() {
         timer.reset();
+//        motor.set(1);
     }
 
     /**
@@ -131,7 +130,7 @@ public class PIDFVelocity extends OpMode {
             runPIDFTest();
         }
 
-        motor.set(feedforward.calculate(motor.getVelocity()));
+//        motor.set(feedforward.calculate(motor.getVelocity()));
 
         telemetry.addData("Max RPM", motor.getMaxRPM());
         telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
@@ -156,14 +155,14 @@ public class PIDFVelocity extends OpMode {
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasPressed()) {
-                    motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
+                    motor.set(RUN_VELOCITY);
                     timer.reset();
                     runState = RunPIDFState.RUNNING;
                 }
                 break;
 
             case RUNNING:
-                motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
+                motor.set(feedforward.calculate(RUN_VELOCITY));
                 if (timer.milliseconds() >= 3000) {
                     motor.stopMotor();
                     timer.reset();
@@ -231,7 +230,7 @@ public class PIDFVelocity extends OpMode {
      * */
     private void updatePIDF() {
         motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-        motor.setFeedforwardCoefficients(1, ffV);
+        motor.setFeedforwardCoefficients(ffS, ffV);
         velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
     }
