@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -36,19 +38,20 @@ import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeed
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
  * OpMode to test the effect of  changing PIDF values for motor encoders.
  * Use it to experiment with PIDF values.
  */
-//TODO: Add ability to change coefficients during the test.
+@Config
 @TeleOp(name = "PIDF Velocity", group = "test")
 //@Disabled
 public class PIDFVelocity extends OpMode {
     private final ElapsedTime timer = new ElapsedTime();
     private MotorEx motor;
-    private double achievableTicksPerSecond;
+    private static double achievableTicksPerSecond = 0;
     private SimpleMotorFeedforward feedforward;
     private Datalogger datalogger;
     private String datalogFilename = "PIDFDatalog";   // modify name for each run
@@ -57,13 +60,15 @@ public class PIDFVelocity extends OpMode {
     private double[] feedforwardCoefficients = new double[4];
     // Control running and logging of the test.
     private boolean isRunningTest = true;
-    private final double RUN_VELOCITY = .3;
-    private double velocityP = 0.0;
-    private double velocityI = 0.0;
-    private double velocityD = 0.0;
-    private double ffS = 1.0;
-    private double ffV = 0.5;
-
+    FtcDashboard dashboard;
+    Telemetry telemetry;
+    public static double RUN_VELOCITY = 0.8;
+    public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
+    public static double VELOCITY_P = 0.0;
+    public static double VELOCITY_I = 0.0005;
+    public static double VELOCITY_D = 0.0;
+    public static double FF_S = 0.005;
+    public static double FF_V = 1.0;
 
     private enum RunPIDFState {
         WAITING_TO_START,
@@ -78,6 +83,8 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void init() {
+        dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
@@ -93,8 +100,6 @@ public class PIDFVelocity extends OpMode {
                 feedforwardCoefficients[1]);
 
         telemetry.addLine("Left bumper: Start PIDF test and logging");
-        telemetry.addLine("dpad left/right: Decrease/Increase velocity kP by 0.01");
-        telemetry.addLine("dpad up/down: Increase/Decrease feedforward kV by 0.1");
         telemetry.update();
 
         // Set new values for velocity control.
@@ -125,16 +130,16 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void loop() {
-
+        updatePIDF();
         if (isRunningTest) {
             runPIDFTest();
         }
 
 //        motor.set(feedforward.calculate(motor.getVelocity()));
-
         telemetry.addData("Max RPM", motor.getMaxRPM());
         telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
         telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
+        telemetry.addData("Target Velocity", "%6.2f", TARGET);
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
         telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
         telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
@@ -156,6 +161,7 @@ public class PIDFVelocity extends OpMode {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasPressed()) {
                     motor.set(RUN_VELOCITY);
+                    TARGET= RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
                     runState = RunPIDFState.RUNNING;
                 }
@@ -172,7 +178,7 @@ public class PIDFVelocity extends OpMode {
 
             case DELAYING_AFTER_RUNNING:
                 // Give some time for the motor to stop.
-                if (timer.milliseconds() >= 500) {
+                if (timer.milliseconds() >= 300) {
                     datalogger.closeDataLogger();
                     runState = RunPIDFState.WAITING_TO_START;
                 }
@@ -229,8 +235,8 @@ public class PIDFVelocity extends OpMode {
     /*
      * */
     private void updatePIDF() {
-        motor.setVeloCoefficients(velocityP, velocityI, velocityD);
-        motor.setFeedforwardCoefficients(ffS, ffV);
+        motor.setVeloCoefficients(VELOCITY_P, VELOCITY_I, VELOCITY_D);
+        motor.setFeedforwardCoefficients(FF_S, FF_V);
         velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
     }
