@@ -64,11 +64,11 @@ public class PIDFVelocity extends OpMode {
     Telemetry telemetry;
     public static double RUN_VELOCITY = 0.8;
     public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
-    public static double VELOCITY_P = 0.0;
-    public static double VELOCITY_I = 0.0005;
+    public static double VELOCITY_P = 0.05;
+    public static double VELOCITY_I = 0.0;
     public static double VELOCITY_D = 0.0;
-    public static double FF_S = 0.005;
-    public static double FF_V = 1.0;
+    public static double FF_S = 0.1;
+    public static double FF_V = 1.05;
 
     private enum RunPIDFState {
         WAITING_TO_START,
