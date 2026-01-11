@@ -82,7 +82,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@TeleOp(name="Tank Drive To AprilTag", group = "test")
+@TeleOp(name="Tank Drive To AprilTag", group = "vision")
 //@Disabled
 public class AutoDriveToAprilTagTank extends LinearOpMode
 {

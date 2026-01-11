@@ -69,7 +69,7 @@ import java.util.List;
  */
 
 //@Disabled
-@TeleOp(name = "Vision Color-Locator (Circle)", group = "test")
+@TeleOp(name = "Vision Color-Locator (Circle)", group = "vision")
 public class VisionColorLocator_Circle extends LinearOpMode {
     @Override
     public void runOpMode() {
