@@ -18,7 +18,8 @@ public class Constants {
             .angleUnit(AngleUnit.RADIANS)
             .offset(new SparkFunOTOS.Pose2D(3.0, 0.0, 0.0)); // x, y, heading offsets of the localizer relative to robot center
 
-    public static FollowerConstants followerConstants = new FollowerConstants();
+    public static FollowerConstants followerConstants = new FollowerConstants()
+            .mass(15.0); // mass of robot in kg;
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
