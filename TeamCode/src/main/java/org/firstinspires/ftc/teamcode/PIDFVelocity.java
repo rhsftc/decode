@@ -90,11 +90,8 @@ public class PIDFVelocity extends OpMode {
 
         motor = new MotorEx(hardwareMap, "motor", Motor.GoBILDA.RPM_435);
         motor.setInverted(false);
-        stopAndResetEncoder(motor);
         motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
         motor.setRunMode(MotorEx.RunMode.VelocityControl);
-        achievableTicksPerSecond = motor.ACHIEVABLE_MAX_TICKS_PER_SECOND;
-        velocityCoefficients = motor.getVeloCoefficients();
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
         feedforward = new SimpleMotorFeedforward(feedforwardCoefficients[0],
                 feedforwardCoefficients[1]);
