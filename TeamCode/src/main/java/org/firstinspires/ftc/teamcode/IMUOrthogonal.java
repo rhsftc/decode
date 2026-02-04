@@ -118,6 +118,11 @@ public class IMUOrthogonal extends LinearOpMode {
         // Note: if you choose two conflicting directions, this initialization will cause a code exception.
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
+        LowPassFilter lowPassZ = new LowPassFilter(0.1);
+        double filteredZ;
+        LowPassFilter lowPassVelocityZ = new LowPassFilter(0.1);
+        double filteredVelocity = 0;
+
         // Loop and update the dashboard
         while (!isStopRequested()) {
 
@@ -133,15 +138,52 @@ public class IMUOrthogonal extends LinearOpMode {
 
             // Retrieve Rotational Angles and Velocities
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            filteredZ = lowPassZ.estimate(orientation.getYaw());
             AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
+            filteredVelocity = lowPassVelocityZ.estimate(angularVelocity.zRotationRate);
 
             telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
+            telemetry.addData("Filtered Yaw: ", "%.2f Deg.", filteredZ);
             telemetry.addData("Pitch (X)", "%.2f Deg.", orientation.getPitch(AngleUnit.DEGREES));
             telemetry.addData("Roll (Y)", "%.2f Deg.\n", orientation.getRoll(AngleUnit.DEGREES));
             telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
+            telemetry.addData("Filtered Vel.", "%.2f Deg/Sec", filteredVelocity);
             telemetry.addData("Pitch (X) velocity", "%.2f Deg/Sec", angularVelocity.xRotationRate);
             telemetry.addData("Roll (Y) velocity", "%.2f Deg/Sec", angularVelocity.yRotationRate);
             telemetry.update();
+        }
+    }
+
+    public class LowPassFilter {
+
+        protected double gain;
+
+        protected double previousEstimate = 0;
+
+        /**
+         * gain of the low pass filter.
+         * <p>
+         * (0 < x < 1)
+         * <p>
+         * High values of A are smoother but have more phase lag, low values of A allow more noise but
+         * will respond faster to quick changes in the measured state.
+         *
+         * @param gain Aforementioned Gain. (0 < x < 1)
+         */
+        public LowPassFilter(double gain) {
+            this.gain = gain;
+        }
+
+        /**
+         * Low Pass Filter estimate
+         *
+         * @param measurement current measurement
+         * @return filtered value
+         */
+        public double estimate(double measurement) {
+            double estimate = gain * previousEstimate + (1 - gain) * measurement;
+            previousEstimate = estimate;
+            return estimate;
         }
     }
 }
