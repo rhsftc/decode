@@ -29,12 +29,15 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -78,9 +81,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  */
 @TeleOp(name = "IMU Orthogonal", group = "test")
 //@Disabled   // Comment this out to add to the OpMode list
+@Config
 public class IMUOrthogonal extends LinearOpMode {
     // The IMU sensor object
     IMU imu;
+    public static double lowPassGain = 0.3;
+    FtcDashboard dashboard;
+    Telemetry telemetry;
 
     //----------------------------------------------------------------------------------------------
     // Main logic
@@ -118,13 +125,24 @@ public class IMUOrthogonal extends LinearOpMode {
         // Note: if you choose two conflicting directions, this initialization will cause a code exception.
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        LowPassFilter lowPassZ = new LowPassFilter(0.1);
+        dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
+        double yaw;
+        double pitch;
+        double roll;
+        double yawVelocity;
+        double pitchVelocity;
+        double rollVelocity;
+
+        LowPassFilter lowPassZ = new LowPassFilter(lowPassGain);
         double filteredZ;
-        LowPassFilter lowPassVelocityZ = new LowPassFilter(0.1);
-        double filteredVelocity = 0;
+        LowPassFilter lowPassVelocityZ = new LowPassFilter(lowPassGain);
+        double filteredVelocity;
 
         // Loop and update the dashboard
         while (!isStopRequested()) {
+            lowPassZ.setGain(lowPassGain);
+            lowPassVelocityZ.setGain(lowPassGain);
 
             telemetry.addData("Hub orientation", "Logo=%s   USB=%s\n ", logoDirection, usbDirection);
 
@@ -138,18 +156,25 @@ public class IMUOrthogonal extends LinearOpMode {
 
             // Retrieve Rotational Angles and Velocities
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            filteredZ = lowPassZ.estimate(orientation.getYaw());
             AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
+            yaw = orientation.getYaw(AngleUnit.DEGREES);
+            pitch = orientation.getPitch(AngleUnit.DEGREES);
+            roll = orientation.getRoll(AngleUnit.DEGREES);
+            yawVelocity = angularVelocity.zRotationRate;
+            pitchVelocity = angularVelocity.xRotationRate;
+            rollVelocity = angularVelocity.yRotationRate;
+
+            filteredZ = lowPassZ.estimate(orientation.getYaw());
             filteredVelocity = lowPassVelocityZ.estimate(angularVelocity.zRotationRate);
 
-            telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
+            telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", yaw);
             telemetry.addData("Filtered Yaw: ", "%.2f Deg.", filteredZ);
-            telemetry.addData("Pitch (X)", "%.2f Deg.", orientation.getPitch(AngleUnit.DEGREES));
-            telemetry.addData("Roll (Y)", "%.2f Deg.\n", orientation.getRoll(AngleUnit.DEGREES));
-            telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
+            telemetry.addData("Pitch (X)", "%.2f Deg.", pitch);
+            telemetry.addData("Roll (Y)", "%.2f Deg.\n", roll);
+            telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", yawVelocity);
             telemetry.addData("Filtered Vel.", "%.2f Deg/Sec", filteredVelocity);
-            telemetry.addData("Pitch (X) velocity", "%.2f Deg/Sec", angularVelocity.xRotationRate);
-            telemetry.addData("Roll (Y) velocity", "%.2f Deg/Sec", angularVelocity.yRotationRate);
+            telemetry.addData("Pitch (X) velocity", "%.2f Deg/Sec", pitchVelocity);
+            telemetry.addData("Roll (Y) velocity", "%.2f Deg/Sec", rollVelocity);
             telemetry.update();
         }
     }
@@ -171,6 +196,11 @@ public class IMUOrthogonal extends LinearOpMode {
          * @param gain Aforementioned Gain. (0 < x < 1)
          */
         public LowPassFilter(double gain) {
+            this.gain = gain;
+        }
+
+        // Added to allow changes using dashboard.
+        public void setGain(double gain) {
             this.gain = gain;
         }
 
