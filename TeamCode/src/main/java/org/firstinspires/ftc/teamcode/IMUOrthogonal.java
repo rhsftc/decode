@@ -42,6 +42,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
+import java.util.Set;
+
 /*
  * This OpMode shows how to use the new universal IMU interface. This
  * interface may be used with the BNO055 IMU or the BHI260 IMU. It assumes that an IMU is configured
@@ -81,13 +83,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  */
 @TeleOp(name = "IMU Orthogonal", group = "test")
 //@Disabled   // Comment this out to add to the OpMode list
-@Config
 public class IMUOrthogonal extends LinearOpMode {
     // The IMU sensor object
     IMU imu;
     public static double lowPassGain = 0.3;
-    FtcDashboard dashboard;
-    Telemetry telemetry;
+//    FtcDashboard dashboard;
+//    Telemetry telemetry;
 
     //----------------------------------------------------------------------------------------------
     // Main logic
@@ -125,8 +126,8 @@ public class IMUOrthogonal extends LinearOpMode {
         // Note: if you choose two conflicting directions, this initialization will cause a code exception.
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
         double yaw;
         double pitch;
         double roll;
@@ -166,6 +167,9 @@ public class IMUOrthogonal extends LinearOpMode {
 
             filteredZ = lowPassZ.estimate(orientation.getYaw());
             filteredVelocity = lowPassVelocityZ.estimate(angularVelocity.zRotationRate);
+
+            Set imuName =hardwareMap.getNamesOf(imu);
+            telemetry.addData("IMU Name", imuName);
 
             telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", yaw);
             telemetry.addData("Filtered Yaw: ", "%.2f Deg.", filteredZ);
