@@ -56,19 +56,22 @@ public class PIDFVelocity extends OpMode {
     private Datalogger datalogger;
     private String datalogFilename = "PIDFDatalog";   // modify name for each run
 
+    private double[] defaultVelocityCoefficients = new double[4];
+    private double[] defaultFeedforwardCoefficients = new double[4];
+
     private double[] velocityCoefficients = new double[4];
     private double[] feedforwardCoefficients = new double[4];
     // Control running and logging of the test.
     private boolean isRunningTest = true;
-    FtcDashboard dashboard;
-    Telemetry telemetry;
+    //    FtcDashboard dashboard;
+    //    Telemetry telemetry;
     public static double RUN_VELOCITY = 0.8;
     public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
-    public static double VELOCITY_P = 0.05;
+    public static double VELOCITY_P = 1.03;
     public static double VELOCITY_I = 0.0;
     public static double VELOCITY_D = 0.0;
-    public static double FF_S = 0.1;
-    public static double FF_V = 1.05;
+    public static double FF_S = 0.135;
+    public static double FF_V = 0.85;
 
     private enum RunPIDFState {
         WAITING_TO_START,
@@ -83,8 +86,8 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void init() {
-        dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
@@ -96,11 +99,14 @@ public class PIDFVelocity extends OpMode {
         feedforward = new SimpleMotorFeedforward(feedforwardCoefficients[0],
                 feedforwardCoefficients[1]);
 
-        telemetry.addLine("Left bumper: Start PIDF test and logging");
-        telemetry.update();
-
-        // Set new values for velocity control.
-        updatePIDF();
+        // Get the default coefficients.
+        getPIDFCoefficients();
+        // Save the default coefficients.
+        defaultVelocityCoefficients = velocityCoefficients;
+        defaultFeedforwardCoefficients = feedforwardCoefficients;
+        telemetry.addLine("Left bumper: Start test with default PIDF coefficients");
+        telemetry.addLine("Right bumper: Start test with custom coefficients");
+        showTelemetry();
     }
 
     /**
@@ -118,7 +124,6 @@ public class PIDFVelocity extends OpMode {
     @Override
     public void start() {
         timer.reset();
-//        motor.set(1);
     }
 
     /**
@@ -127,38 +132,29 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void loop() {
-        updatePIDF();
         if (isRunningTest) {
             runPIDFTest();
         }
 
-//        motor.set(feedforward.calculate(motor.getVelocity()));
-        telemetry.addData("Max RPM", motor.getMaxRPM());
-        telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
-        telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
-        telemetry.addData("Target Velocity", "%6.2f", TARGET);
-        telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
-        telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
-        telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
-        telemetry.addData("Velocity kP", velocityCoefficients[0]);
-        telemetry.addData("Velocity kI", velocityCoefficients[1]);
-        telemetry.addData("Velocity kD", velocityCoefficients[2]);
-        telemetry.addData("FF kS", feedforwardCoefficients[0]);
-        telemetry.addData("FF kV", feedforwardCoefficients[1]);
-        telemetry.addData("FF kA", feedforwardCoefficients[2]);
-        telemetry.update();
+        showTelemetry();
     }
 
     /*
      * The main state machine for running the PIDF test.
      * */
     private void runPIDFTest() {
-        logData();
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasPressed()) {
+                    updatePIDF(true);
                     motor.set(RUN_VELOCITY);
-                    TARGET= RUN_VELOCITY * achievableTicksPerSecond;
+                    TARGET = RUN_VELOCITY * achievableTicksPerSecond;
+                    timer.reset();
+                    runState = RunPIDFState.RUNNING;
+                } else if (gamepad1.rightBumperWasPressed()) {
+                    updatePIDF(false);
+                    motor.set(RUN_VELOCITY);
+                    TARGET = RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
                     runState = RunPIDFState.RUNNING;
                 }
@@ -171,6 +167,7 @@ public class PIDFVelocity extends OpMode {
                     timer.reset();
                     runState = RunPIDFState.DELAYING_AFTER_RUNNING;
                 }
+                logData();
                 break;
 
             case DELAYING_AFTER_RUNNING:
@@ -179,6 +176,7 @@ public class PIDFVelocity extends OpMode {
                     datalogger.closeDataLogger();
                     runState = RunPIDFState.WAITING_TO_START;
                 }
+                logData();
                 break;
 
             default:
@@ -219,22 +217,51 @@ public class PIDFVelocity extends OpMode {
      * Log data to the datalogger when isRunning = true.
      * */
     private void logData() {
-        if (runState == RunPIDFState.RUNNING || runState == RunPIDFState.DELAYING_AFTER_RUNNING) {
-            datalogger.addField(RUN_VELOCITY * achievableTicksPerSecond);
-            datalogger.addField(motor.getVelocity());
-            datalogger.addField(motor.getCorrectedVelocity());
-            datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
-            datalogger.addField(motor.getAcceleration());
-            datalogger.newLine();
-        }
+        datalogger.addField(RUN_VELOCITY * achievableTicksPerSecond);
+        datalogger.addField(motor.getVelocity());
+        datalogger.addField(motor.getCorrectedVelocity());
+        datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
+        datalogger.addField(motor.getAcceleration());
+        datalogger.newLine();
+    }
+
+    private void getPIDFCoefficients() {
+        velocityCoefficients = motor.getVeloCoefficients();
+        feedforwardCoefficients = motor.getFeedforwardCoefficients();
     }
 
     /*
      * */
-    private void updatePIDF() {
-        motor.setVeloCoefficients(VELOCITY_P, VELOCITY_I, VELOCITY_D);
-        motor.setFeedforwardCoefficients(FF_S, FF_V);
-        velocityCoefficients = motor.getVeloCoefficients();
-        feedforwardCoefficients = motor.getFeedforwardCoefficients();
+    private void updatePIDF(boolean useDefaults) {
+        if (useDefaults) {
+            motor.setFeedforwardCoefficients(defaultFeedforwardCoefficients[0],
+                    defaultFeedforwardCoefficients[1],
+                    defaultFeedforwardCoefficients[2]);
+            motor.setVeloCoefficients(defaultVelocityCoefficients[0],
+                    defaultVelocityCoefficients[1],
+                    defaultVelocityCoefficients[2]);
+        } else {
+            motor.setVeloCoefficients(VELOCITY_P, VELOCITY_I, VELOCITY_D);
+            motor.setFeedforwardCoefficients(FF_S, FF_V);
+        }
+        // Update the coefficients from the motor after setting them for telemetry display.
+        getPIDFCoefficients();
+    }
+
+    private void showTelemetry() {
+        telemetry.addData("Max RPM", motor.getMaxRPM());
+        telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
+        telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
+        telemetry.addData("Target Velocity", "%6.2f", TARGET);
+        telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
+        telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
+        telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
+        telemetry.addData("Velocity kP", velocityCoefficients[0]);
+        telemetry.addData("Velocity kI", velocityCoefficients[1]);
+        telemetry.addData("Velocity kD", velocityCoefficients[2]);
+        telemetry.addData("FF kS", feedforwardCoefficients[0]);
+        telemetry.addData("FF kV", feedforwardCoefficients[1]);
+        telemetry.addData("FF kA", feedforwardCoefficients[2]);
+        telemetry.update();
     }
 }
