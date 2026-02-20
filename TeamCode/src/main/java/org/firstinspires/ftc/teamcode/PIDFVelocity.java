@@ -33,6 +33,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
@@ -49,6 +50,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @TeleOp(name = "PIDF Velocity", group = "test")
 //@Disabled
 public class PIDFVelocity extends OpMode {
+    private VoltageSensor voltageSensor;
+    private double controlHubVoltage = 0;
     private final ElapsedTime timer = new ElapsedTime();
     private MotorEx motor;
     private static double achievableTicksPerSecond = 0;
@@ -86,6 +89,7 @@ public class PIDFVelocity extends OpMode {
      */
     @Override
     public void init() {
+        voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 //        dashboard = FtcDashboard.getInstance();
 //        telemetry = dashboard.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
@@ -249,6 +253,7 @@ public class PIDFVelocity extends OpMode {
     }
 
     private void showTelemetry() {
+        controlHubVoltage = voltageSensor.getVoltage();
         telemetry.addData("Max RPM", motor.getMaxRPM());
         telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
         telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
@@ -256,6 +261,7 @@ public class PIDFVelocity extends OpMode {
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
         telemetry.addData("Acceleration", "%6.2f", motor.getAcceleration());
         telemetry.addData("Current (milli amps)", "%6.2f", motor.getCurrent(CurrentUnit.MILLIAMPS));
+        telemetry.addData("Voltage", "%6.2f", controlHubVoltage);
         telemetry.addData("Velocity kP", velocityCoefficients[0]);
         telemetry.addData("Velocity kI", velocityCoefficients[1]);
         telemetry.addData("Velocity kD", velocityCoefficients[2]);
