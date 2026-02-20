@@ -213,6 +213,7 @@ public class PIDFVelocity extends OpMode {
         datalogger.addField("Velocity");
         datalogger.addField("Corrected Velocity");
         datalogger.addField("Current (mA)");
+        datalogger.addField("Voltage (V)");
         datalogger.addField("Acceleration");
         datalogger.firstLine();                        // end first line (row)
     }
@@ -225,6 +226,7 @@ public class PIDFVelocity extends OpMode {
         datalogger.addField(motor.getVelocity());
         datalogger.addField(motor.getCorrectedVelocity());
         datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
+        datalogger.addField(controlHubVoltage);
         datalogger.addField(motor.getAcceleration());
         datalogger.newLine();
     }
