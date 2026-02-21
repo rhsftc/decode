@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,7 +38,6 @@ import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeed
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
@@ -78,7 +76,9 @@ public class PIDFVelocity extends OpMode {
 
     private enum RunPIDFState {
         WAITING_TO_START,
-        RUNNING,
+        RUN_ONE,
+        QUICK_STOP,
+        RUN_TWO,
         DELAYING_AFTER_RUNNING
     }
 
@@ -154,19 +154,41 @@ public class PIDFVelocity extends OpMode {
                     motor.set(RUN_VELOCITY);
                     TARGET = RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
-                    runState = RunPIDFState.RUNNING;
+                    runState = RunPIDFState.RUN_ONE;
                 } else if (gamepad1.rightBumperWasPressed()) {
                     updatePIDF(false);
                     motor.set(RUN_VELOCITY);
                     TARGET = RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
-                    runState = RunPIDFState.RUNNING;
+                    runState = RunPIDFState.RUN_ONE;
                 }
                 break;
 
-            case RUNNING:
+            // Start running the motor.
+            case RUN_ONE:
                 motor.set(feedforward.calculate(RUN_VELOCITY));
-                if (timer.milliseconds() >= 3000) {
+                if (timer.milliseconds() >= 1500) {
+                    motor.stopMotor();
+                    timer.reset();
+                    runState = RunPIDFState.QUICK_STOP;
+                }
+                logData();
+                break;
+
+            // Stop the motor to simulate launching or some other interruption.
+            case QUICK_STOP:
+                if (timer.milliseconds() >= 10) {
+                    motor.stopMotor();
+                    timer.reset();
+                    runState = RunPIDFState.RUN_TWO;
+                }
+                logData();
+                break;
+
+            // Run the rest of the sequence.
+            case RUN_TWO:
+                motor.set(feedforward.calculate(RUN_VELOCITY));
+                if (timer.milliseconds() >= 1500) {
                     motor.stopMotor();
                     timer.reset();
                     runState = RunPIDFState.DELAYING_AFTER_RUNNING;
@@ -186,6 +208,7 @@ public class PIDFVelocity extends OpMode {
             default:
                 break;
         }
+
     }
 
     /**
