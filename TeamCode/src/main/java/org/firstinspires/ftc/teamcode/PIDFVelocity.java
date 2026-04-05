@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,6 +39,7 @@ import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeed
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
@@ -54,6 +56,7 @@ public class PIDFVelocity extends OpMode {
     private MotorEx motor;
     private static double achievableTicksPerSecond = 0;
     private SimpleMotorFeedforward feedforward;
+    private double calculatedFeedforward = 0;
     private Datalogger datalogger;
     private String datalogFilename = "PIDFDatalog";   // modify name for each run
 
@@ -64,14 +67,14 @@ public class PIDFVelocity extends OpMode {
     private double[] feedforwardCoefficients = new double[4];
     // Control running and logging of the test.
     private boolean isRunningTest = true;
-    //    FtcDashboard dashboard;
-    //    Telemetry telemetry;
-    public static double RUN_VELOCITY = 0.8;
+        FtcDashboard dashboard;
+        Telemetry telemetry;
+    public static double RUN_VELOCITY = 1.0;
     public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
     public static double VELOCITY_P = 1.03;
     public static double VELOCITY_I = 0.0;
     public static double VELOCITY_D = 0.0;
-    public static double FF_S = 0.135;
+    public static double FF_S = 0.0;
     public static double FF_V = 0.85;
 
     private enum RunPIDFState {
@@ -90,8 +93,8 @@ public class PIDFVelocity extends OpMode {
     @Override
     public void init() {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
-//        dashboard = FtcDashboard.getInstance();
-//        telemetry = dashboard.getTelemetry();
+        dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
@@ -99,6 +102,8 @@ public class PIDFVelocity extends OpMode {
         motor.setInverted(false);
         motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
         motor.setRunMode(MotorEx.RunMode.VelocityControl);
+        achievableTicksPerSecond = motor.ACHIEVABLE_MAX_TICKS_PER_SECOND;
+        TARGET = RUN_VELOCITY * achievableTicksPerSecond;
         feedforwardCoefficients = motor.getFeedforwardCoefficients();
         feedforward = new SimpleMotorFeedforward(feedforwardCoefficients[0],
                 feedforwardCoefficients[1]);
@@ -151,22 +156,21 @@ public class PIDFVelocity extends OpMode {
             case WAITING_TO_START:
                 if (gamepad1.leftBumperWasPressed()) {
                     updatePIDF(true);
-                    motor.set(RUN_VELOCITY);
-                    TARGET = RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
+                    motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
                     runState = RunPIDFState.RUN_ONE;
                 } else if (gamepad1.rightBumperWasPressed()) {
                     updatePIDF(false);
-                    motor.set(RUN_VELOCITY);
-                    TARGET = RUN_VELOCITY * achievableTicksPerSecond;
                     timer.reset();
+                    motor.setVelocity(RUN_VELOCITY * achievableTicksPerSecond);
                     runState = RunPIDFState.RUN_ONE;
                 }
                 break;
 
             // Start running the motor.
             case RUN_ONE:
-                motor.set(feedforward.calculate(RUN_VELOCITY));
+                calculatedFeedforward = feedforward.calculate(RUN_VELOCITY);
+                motor.set(calculatedFeedforward);
                 if (timer.milliseconds() >= 1500) {
                     motor.stopMotor();
                     timer.reset();
@@ -178,7 +182,6 @@ public class PIDFVelocity extends OpMode {
             // Stop the motor to simulate launching or some other interruption.
             case QUICK_STOP:
                 if (timer.milliseconds() >= 10) {
-                    motor.stopMotor();
                     timer.reset();
                     runState = RunPIDFState.RUN_TWO;
                 }
@@ -187,7 +190,8 @@ public class PIDFVelocity extends OpMode {
 
             // Run the rest of the sequence.
             case RUN_TWO:
-                motor.set(feedforward.calculate(RUN_VELOCITY));
+                calculatedFeedforward = feedforward.calculate(RUN_VELOCITY);
+                motor.set(calculatedFeedforward);
                 if (timer.milliseconds() >= 1500) {
                     motor.stopMotor();
                     timer.reset();
@@ -233,8 +237,8 @@ public class PIDFVelocity extends OpMode {
     private void initDatalogger() {
         // Name the fields (column labels) generated by this OpMode.
         datalogger.addField("Target Velocity");
+        datalogger.addField("Calculated Feedforward");
         datalogger.addField("Velocity");
-        datalogger.addField("Corrected Velocity");
         datalogger.addField("Current (mA)");
         datalogger.addField("Voltage (V)");
         datalogger.addField("Acceleration");
@@ -245,9 +249,9 @@ public class PIDFVelocity extends OpMode {
      * Log data to the datalogger when isRunning = true.
      * */
     private void logData() {
-        datalogger.addField(RUN_VELOCITY * achievableTicksPerSecond);
+        datalogger.addField(TARGET);
+        datalogger.addField(calculatedFeedforward);
         datalogger.addField(motor.getVelocity());
-        datalogger.addField(motor.getCorrectedVelocity());
         datalogger.addField(motor.getCurrent(CurrentUnit.MILLIAMPS));
         datalogger.addField(controlHubVoltage);
         datalogger.addField(motor.getAcceleration());
@@ -280,7 +284,6 @@ public class PIDFVelocity extends OpMode {
     private void showTelemetry() {
         controlHubVoltage = voltageSensor.getVoltage();
         telemetry.addData("Max RPM", motor.getMaxRPM());
-        telemetry.addData("Corrected Velocity", motor.getCorrectedVelocity());
         telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
         telemetry.addData("Target Velocity", "%6.2f", TARGET);
         telemetry.addData("Velocity", "%6.2f", motor.getVelocity());
