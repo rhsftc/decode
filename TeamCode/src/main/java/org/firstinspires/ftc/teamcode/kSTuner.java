@@ -15,15 +15,14 @@ public class kSTuner extends OpMode {
     public void init() {
         flyWheel = new FlyWheel();
         flyWheel.init(hardwareMap);
-
     }
 
     @Override
     public void loop() {
         if (gamepad1.dpadLeftWasPressed() && incrementIndex < 4) {
-            incrementIndex--;
-        } else if (gamepad1.dpadRightWasPressed() && incrementIndex > 0) {
             incrementIndex++;
+        } else if (gamepad1.dpadRightWasPressed() && incrementIndex > 0) {
+            incrementIndex--;
         }
 
         double currentStep = increments[incrementIndex];
@@ -38,7 +37,7 @@ public class kSTuner extends OpMode {
 
         flyWheel.setMotorPower(kS);
 
-        telemetry.addData("step", "%.6", currentStep);
+        telemetry.addData("step", "%.6f", currentStep);
         telemetry.addData("increment", "%.6f", kS);
         telemetry.addData("kS", "%.6f", kS);
         telemetry.addData("Target RPM", flyWheel.getRPM());
