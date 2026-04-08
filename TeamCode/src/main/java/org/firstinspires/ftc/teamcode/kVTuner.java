@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class kVTuner extends OpMode {
     private FlyWheel flyWheel;
     private double targetRPM = 3000.0;
-    public double kV = 01;
-    public double kS = 0.17;
+    public double kV = .01;
+    public double kS = 0.0435;
     public double goalRPM = 3000;
     double[] increments = {0.000001, 0.00001, 0.0001, 0.001, 0.01};
     int incrementIndex = 4; //start at .01
@@ -50,7 +50,8 @@ public class kVTuner extends OpMode {
         telemetry.addData("step", "%.6f", currentStep);
         telemetry.addData("increment", "%.6f", kV);
         telemetry.addData("kV", "%.6f", kV);
-        telemetry.addData("Target RPM", flyWheel.getRPM());
+        telemetry.addData("Target RPM", goalRPM);
+        telemetry.addData("RPM", flyWheel.getRPM());
         telemetry.update();
     }
 }

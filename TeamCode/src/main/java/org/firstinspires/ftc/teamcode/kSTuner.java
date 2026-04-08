@@ -40,7 +40,7 @@ public class kSTuner extends OpMode {
         telemetry.addData("step", "%.6f", currentStep);
         telemetry.addData("increment", "%.6f", kS);
         telemetry.addData("kS", "%.6f", kS);
-        telemetry.addData("Target RPM", flyWheel.getRPM());
+        telemetry.addData("RPM", flyWheel.getRPM());
         telemetry.update();
     }
 

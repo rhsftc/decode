@@ -54,7 +54,8 @@ public class kPTuner extends OpMode {
         telemetry.addData("increment", "%.6f", kP);
         telemetry.addData("Error", error);
         telemetry.addData("kP", "%.6f", kP);
-        telemetry.addData("Target RPM", flyWheel.getRPM());
+        telemetry.addData("Target RPM", goalRPM);
+        telemetry.addData("RPM", flyWheel.getRPM());
         telemetry.update();
     }
 }

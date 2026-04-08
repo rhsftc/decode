@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class FlyWheel {
     private DcMotorEx flyWheelMotor;
-    private double encoderCPM;
+    private double encoderCPM = 2368;
     private double gearRatio = 3.0;
     private double kP, kV, kS;
 
