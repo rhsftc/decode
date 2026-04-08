@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name = "kSTuner", group = "test")
 public class kSTuner extends OpMode {
     private FlyWheel flyWheel;
-    private double targetRPM = 3000.0;
+    private double targetRPM = 400.0;
     public double kS = 0;
     double[] increments = {0.000001, 0.00001, 0.0001, 0.001, 0.01};
     int incrementIndex = 4; //start at .01
@@ -41,6 +41,8 @@ public class kSTuner extends OpMode {
         telemetry.addData("increment", "%.6f", kS);
         telemetry.addData("kS", "%.6f", kS);
         telemetry.addData("RPM", flyWheel.getRPM());
+        telemetry.addData("Ticks per second", flyWheel.getTicksPerSecond());
+        telemetry.addData("Target RPM", targetRPM);
         telemetry.update();
     }
 

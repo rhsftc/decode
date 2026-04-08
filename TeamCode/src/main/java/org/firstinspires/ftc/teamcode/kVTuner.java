@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name = "kVTuner", group = "test")
 public class kVTuner extends OpMode {
     private FlyWheel flyWheel;
-    private double targetRPM = 3000.0;
-    public double kV = .01;
+    private double targetRPM = 400.0;
+    public double kV = .0001;
     public double kS = 0.0435;
     public double goalRPM = 3000;
     double[] increments = {0.000001, 0.00001, 0.0001, 0.001, 0.01};
@@ -38,12 +38,12 @@ public class kVTuner extends OpMode {
         }
 
         if (gamepad1.a) {
-            goalRPM = 3000;
+            goalRPM = 400;
         } else if (gamepad1.b) {
-            goalRPM = 1500;
+            goalRPM = 200;
         }
 
-        double power = kV * goalRPM + kS;
+        double power = (kV * goalRPM) + kS;
 
         flyWheel.setMotorPower(power);
 
