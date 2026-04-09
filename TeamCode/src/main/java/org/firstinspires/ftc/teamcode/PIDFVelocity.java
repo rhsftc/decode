@@ -71,7 +71,7 @@ public class PIDFVelocity extends OpMode {
 //    Telemetry telemetry;
     public static double RUN_VELOCITY = 0.5;
     public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
-    public static double VELOCITY_P = 0.0015;
+    public static double VELOCITY_P = 1.0;
     public static double VELOCITY_I = 0.0;
     public static double VELOCITY_D = 0.0;
     public static double FF_S = 0.0435;

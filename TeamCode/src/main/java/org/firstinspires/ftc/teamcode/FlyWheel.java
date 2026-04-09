@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 public class FlyWheel {
     public DcMotorEx flyWheelMotor;
@@ -9,10 +10,48 @@ public class FlyWheel {
     private double gearRatio = 1.0;
     private double kP = 0.0015, kV = 0.00201, kS = .0435;
 
+    // variables for SDK PIDF coefficients
+    private PIDFCoefficients defaultVelocityCoefficients;
+    // Use this one to set custom PIDF values.
+    private PIDFCoefficients velocityCoefficients;
+
+    // This allows the flywheel to be tested using different PIDF implementations.
+    public enum PIDFType {
+        SDK_DEFAULT,
+        SDK,
+        CUSTOM;
+
+        public PIDFType getNext() {
+            return values()[(ordinal() + 1) % values().length];
+        }
+    }
+
+    public PIDFType pidfType = PIDFType.SDK_DEFAULT;
+
+    public FlyWheel(PIDFType pidfType) {
+        this.pidfType = pidfType;
+    }
+
     void init(HardwareMap hardwareMap) {
         flyWheelMotor = hardwareMap.get(DcMotorEx.class, "motor");
         flyWheelMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        // Depending on the use of the flywheel on your robot the zero power behavior may need to be changed.
         flyWheelMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        // Get the SDK default PIDF coefficients.
+        defaultVelocityCoefficients = flyWheelMotor.getPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        switch (pidfType) {
+            case SDK_DEFAULT:
+                break;
+            case SDK:
+                velocityCoefficients.p = 1.0;
+                velocityCoefficients.i = 0.0;
+                velocityCoefficients.d = 0.0;
+                velocityCoefficients.f = 0.0;
+                break;
+            case CUSTOM:
+                break;
+            default:
+        }
     }
 
     public void setMotorMode(DcMotorEx.RunMode runMode) {

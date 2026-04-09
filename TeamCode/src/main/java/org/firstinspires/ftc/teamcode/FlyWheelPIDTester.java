@@ -19,7 +19,7 @@ public class FlyWheelPIDTester extends OpMode {
     private Datalogger datalogger;
     private String datalogFilename = "FlyWheelPIDTester";   // modify name for each run
 
-    private FlyWheel flyWheel = new FlyWheel();
+    private FlyWheel flyWheel;
     // Use this one to test built-in PIDF values
     private DcMotorEx flyWheelMotor;
 
@@ -38,17 +38,37 @@ public class FlyWheelPIDTester extends OpMode {
     @Override
     public void init() {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
-        datalogger = new Datalogger(datalogFilename);
-        initDatalogger();
-        flyWheel.init(hardwareMap);
+
+        telemetry.addData("PIDF Type", flyWheel.pidfType);
         telemetry.addLine("Press start to run the PIDF test.");
         telemetry.update();
+    }
+
+    @Override
+    public void init_loop() {
+        // Select the PIDF type to test.
+        if (gamepad1.dpadLeftWasPressed()) {
+            flyWheel.pidfType = FlyWheel.PIDFType.SDK_DEFAULT;
+        } else if (gamepad1.dpadRightWasPressed()) {
+            flyWheel.pidfType = FlyWheel.PIDFType.SDK;
+        }
+    }
+
+    @Override
+    public void start() {
+        flyWheel = new FlyWheel(FlyWheel.PIDFType.SDK_DEFAULT);
+        flyWheel.init(hardwareMap);
+        datalogFilename = String.format("%s%d", datalogFilename, flyWheel.pidfType);
+        datalogger = new Datalogger(datalogFilename);
+        initDatalogger();
+        timer.reset();
     }
 
     @Override
     public void loop() {
         runPIDFTest();
 
+        telemetry.addData("PIDF Type", flyWheel.pidfType);
         telemetry.addData("Run state", runState);
         telemetry.addData("Current (mA)",
                 "%6.2f", flyWheel.flyWheelMotor.getCurrent(CurrentUnit.MILLIAMPS));
@@ -62,7 +82,7 @@ public class FlyWheelPIDTester extends OpMode {
      * The main state machine for running the PIDF test.
      * */
     private void runPIDFTest() {
-        controlHubVoltage= voltageSensor.getVoltage();
+        controlHubVoltage = voltageSensor.getVoltage();
         flyWheel.flyWheelMotor.getCurrent(CurrentUnit.MILLIAMPS);
         switch (runState) {
             case WAITING_TO_START:
