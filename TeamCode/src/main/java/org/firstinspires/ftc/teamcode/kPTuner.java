@@ -16,7 +16,7 @@ public class kPTuner extends OpMode {
 
     @Override
     public void init() {
-        flyWheel = new FlyWheel();
+        flyWheel = new FlyWheel(flyWheel.pidfType);
         flyWheel.init(hardwareMap);
     }
 

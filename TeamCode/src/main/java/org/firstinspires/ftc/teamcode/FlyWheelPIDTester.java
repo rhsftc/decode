@@ -38,27 +38,26 @@ public class FlyWheelPIDTester extends OpMode {
     @Override
     public void init() {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+        flyWheel = new FlyWheel(FlyWheel.PIDFType.SDK_DEFAULT);
+    }
 
+    @Override
+    public void init_loop() {
+        // Select the PIDF type to test.
+        if (gamepad1.dpadUpWasPressed()) {
+            flyWheel.pidfType = flyWheel.pidfType.getNext();
+        }
+
+        telemetry.addLine("dpad Up toggles PIDF Type");
         telemetry.addData("PIDF Type", flyWheel.pidfType);
         telemetry.addLine("Press start to run the PIDF test.");
         telemetry.update();
     }
 
     @Override
-    public void init_loop() {
-        // Select the PIDF type to test.
-        if (gamepad1.dpadLeftWasPressed()) {
-            flyWheel.pidfType = FlyWheel.PIDFType.SDK_DEFAULT;
-        } else if (gamepad1.dpadRightWasPressed()) {
-            flyWheel.pidfType = FlyWheel.PIDFType.SDK;
-        }
-    }
-
-    @Override
     public void start() {
-        flyWheel = new FlyWheel(FlyWheel.PIDFType.SDK_DEFAULT);
         flyWheel.init(hardwareMap);
-        datalogFilename = String.format("%s%d", datalogFilename, flyWheel.pidfType);
+        datalogFilename = String.format("%s%s", datalogFilename, flyWheel.pidfType);
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
         timer.reset();

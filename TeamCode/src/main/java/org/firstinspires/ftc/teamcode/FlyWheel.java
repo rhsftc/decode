@@ -11,8 +11,6 @@ public class FlyWheel {
     private double kP = 0.0015, kV = 0.00201, kS = .0435;
 
     // variables for SDK PIDF coefficients
-    private PIDFCoefficients defaultVelocityCoefficients;
-    // Use this one to set custom PIDF values.
     private PIDFCoefficients velocityCoefficients;
 
     // This allows the flywheel to be tested using different PIDF implementations.
@@ -38,12 +36,12 @@ public class FlyWheel {
         // Depending on the use of the flywheel on your robot the zero power behavior may need to be changed.
         flyWheelMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         // Get the SDK default PIDF coefficients.
-        defaultVelocityCoefficients = flyWheelMotor.getPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        velocityCoefficients = flyWheelMotor.getPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER);
         switch (pidfType) {
             case SDK_DEFAULT:
                 break;
             case SDK:
-                velocityCoefficients.p = 1.0;
+                velocityCoefficients.p = kV;
                 velocityCoefficients.i = 0.0;
                 velocityCoefficients.d = 0.0;
                 velocityCoefficients.f = 0.0;
@@ -66,13 +64,20 @@ public class FlyWheel {
         flyWheelMotor.setPower(0);
     }
 
+    // call every loop to maintain target RPM
     public void setRPM(double targetRPM) {
-        // call every loop
         double error = targetRPM - getRPM();
         double feedBack = error * kP;
-        double feedForward = (kV * targetRPM) + kS;
+        double feedForward = getFeedForward(targetRPM);
+        if (pidfType == PIDFType.SDK || pidfType == PIDFType.SDK_DEFAULT) {
+            flyWheelMotor.setVelocityPIDFCoefficients(kP, 0, 0, feedForward);
+        }
         double power = feedForward + feedBack;
         setMotorPower(power);
+    }
+
+    private double getFeedForward(double targetRPM) {
+        return (kV * targetRPM) + kS;
     }
 
     public double getTicksPerSecond() {
