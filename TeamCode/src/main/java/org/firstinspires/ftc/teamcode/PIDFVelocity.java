@@ -46,7 +46,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * OpMode to test the effect of  changing PIDF values for motor encoders.
  * Use it to experiment with PIDF values.
  */
-@Config
+//@Config
 @TeleOp(name = "PIDF Velocity", group = "test")
 //@Disabled
 public class PIDFVelocity extends OpMode {
@@ -67,15 +67,15 @@ public class PIDFVelocity extends OpMode {
     private double[] feedforwardCoefficients = new double[4];
     // Control running and logging of the test.
     private boolean isRunningTest = true;
-        FtcDashboard dashboard;
-        Telemetry telemetry;
-    public static double RUN_VELOCITY = 1.0;
+//    FtcDashboard dashboard;
+//    Telemetry telemetry;
+    public static double RUN_VELOCITY = 0.5;
     public static double TARGET = RUN_VELOCITY * achievableTicksPerSecond;
-    public static double VELOCITY_P = 1.03;
+    public static double VELOCITY_P = 0.0015;
     public static double VELOCITY_I = 0.0;
     public static double VELOCITY_D = 0.0;
-    public static double FF_S = 0.0;
-    public static double FF_V = 0.85;
+    public static double FF_S = 0.0435;
+    public static double FF_V = 0.0201;
 
     private enum RunPIDFState {
         WAITING_TO_START,
@@ -93,14 +93,14 @@ public class PIDFVelocity extends OpMode {
     @Override
     public void init() {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
-        dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
         datalogger = new Datalogger(datalogFilename);
         initDatalogger();
 
         motor = new MotorEx(hardwareMap, "motor", Motor.GoBILDA.RPM_435);
         motor.setInverted(false);
-        motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
+        motor.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.FLOAT);
         motor.setRunMode(MotorEx.RunMode.VelocityControl);
         achievableTicksPerSecond = motor.ACHIEVABLE_MAX_TICKS_PER_SECOND;
         TARGET = RUN_VELOCITY * achievableTicksPerSecond;
@@ -283,6 +283,7 @@ public class PIDFVelocity extends OpMode {
 
     private void showTelemetry() {
         controlHubVoltage = voltageSensor.getVoltage();
+        telemetry.addData("Run state", runState);
         telemetry.addData("Max RPM", motor.getMaxRPM());
         telemetry.addData("Achievable Ticks", achievableTicksPerSecond);
         telemetry.addData("Target Velocity", "%6.2f", TARGET);
