@@ -36,11 +36,14 @@ public class FlyWheelPIDTester extends OpMode {
     @Override
     public void init() {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+        datalogger = new Datalogger(datalogFilename);
+        initDatalogger();
         flyWheel.init(hardwareMap);
     }
 
     @Override
     public void loop() {
+        runPIDFTest();
 
         telemetry.addData("Target RPM", targetRPM);
         telemetry.addData("RPM", flyWheel.getRPM());
