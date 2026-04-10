@@ -13,7 +13,7 @@ public class kSTuner extends OpMode {
 
     @Override
     public void init() {
-        flyWheel = new FlyWheel(flyWheel.pidfType);
+        flyWheel = new FlyWheel(FlyWheel.PIDFType.SDK_DEFAULT);
         flyWheel.init(hardwareMap);
     }
 

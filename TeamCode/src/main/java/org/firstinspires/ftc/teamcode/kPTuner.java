@@ -12,11 +12,11 @@ public class kPTuner extends OpMode {
     public double kP = 0.0;
     public double goalRPM = 400;
     double[] increments = {0.000001, 0.00001, 0.0001, 0.001, 0.01};
-    int incrementIndex = 2; //start at .0001
+    int incrementIndex = 3; //start at .001
 
     @Override
     public void init() {
-        flyWheel = new FlyWheel(flyWheel.pidfType);
+        flyWheel = new FlyWheel(FlyWheel.PIDFType.SDK_DEFAULT);
         flyWheel.init(hardwareMap);
     }
 

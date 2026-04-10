@@ -8,7 +8,7 @@ public class FlyWheel {
     public DcMotorEx flyWheelMotor;
     private double encoderCPM = 384.5;
     private double gearRatio = 1.0;
-    private double kP = 0.0015, kV = 0.00201, kS = .0435;
+    private double kP = 0.0013, kV = 0.00201, kS = .0435;
 
     // variables for SDK PIDF coefficients
     private PIDFCoefficients velocityCoefficients;

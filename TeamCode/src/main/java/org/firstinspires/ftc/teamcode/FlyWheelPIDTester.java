@@ -82,7 +82,7 @@ public class FlyWheelPIDTester extends OpMode {
      * */
     private void runPIDFTest() {
         controlHubVoltage = voltageSensor.getVoltage();
-        flyWheel.flyWheelMotor.getCurrent(CurrentUnit.MILLIAMPS);
+        motorCurrent = flyWheel.flyWheelMotor.getCurrent(CurrentUnit.MILLIAMPS);
         switch (runState) {
             case WAITING_TO_START:
                 if (gamepad1.startWasPressed()) {
